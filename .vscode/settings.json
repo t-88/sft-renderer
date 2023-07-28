@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "raylib.h": "c",
+        "sft_renderer.h": "c"
+    }
+}

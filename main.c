@@ -1,36 +1,26 @@
 #include "sft_renderer.h"
-#include <assert.h>
-void canvas_draw_rect(Canvas canvas, int x, int y, int w , int h, Int32 color) {
-    assert(w >= 0 && "[Error] in canvas_draw_rect: rect width cant be negative");
-    assert(h >= 0 && "[Error] in canvas_draw_rect: rect height cant be negative");
-
-    if(x > canvas.w || y > canvas.h) {
-        return;
-    }
-
-    if(x + w > canvas.w) { w = canvas.w - x ; }
-    if(y + h > canvas.h) { h = canvas.h - y ; }
-    if(x < 0) { x = 0; }
-    if(y < 0) { y = 0; }
+#include "raylib_backend.h"
 
 
+sftr_Canvas canvas;
+RayLibBackend raylib_backend;
 
 
-    for (int j = 0; j < h; j++)
-        for (int i = 0; i < w; i++) {
-            canvas_draw_pixel(canvas, i + x, j + y,color);
-        }
-    
-
+double x = 1;
+void render() {
+    canvas_clear(canvas,0xFFFF00);
+    canvas_draw_rect(canvas,x,0,50,50,0x000000);
+    x += 100 * raylib_backend.dt;
 }
 
-int main() {
-    Canvas canvas = canvas_new(100,100);
-    
-    canvas_draw_rect(canvas,0,0,10,10,0xFFFF00);
+int main(void) {
+    canvas = canvas_new(400,400);
 
-    canvas_to_ppm(canvas,"output.ppm");
+    raylib_backend.canvas = &canvas;
+    raylib_backend.render = render;
+    raylib_backend_run(&raylib_backend);
 
 
     canvas_destroy(canvas);
+    return 0;
 }

@@ -4,9 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <assert.h>
 
 
-#define HexToColor(color) (Color) { \
+
+
+
+#define HexToColor(color) (sftr_Color) { \
                             .r = ((color) >> 8 * 3) & 0xFF, \
                             .g = ((color) >> 8 * 2) & 0xFF, \
                             .b = ((color) >> 8 * 1) & 0xFF, \
@@ -20,34 +24,34 @@
 
 
 
-typedef  unsigned int Int32;
+typedef  unsigned int sftr_Int32;
 
-typedef struct String {
+typedef struct sftr_String {
     char* val;
     size_t count;
-} String;
+} sftr_String;
 
 
 
 
-typedef struct Color {
-    int r , g , b , a;
+typedef struct sftr_Color {
+    unsigned char r , g , b , a;
 
-} Color;
+} sftr_Color;
 typedef struct Pixel {
-    Color color;
+    sftr_Color color;
 } Pixel;
 
-typedef struct Canvas {
+typedef struct sftr_Canvas {
     int w , h;
     Pixel* pixels; 
-} Canvas;
+} sftr_Canvas;
 
 
-String string_from_int(int val) {
+sftr_String string_from_int(int val) {
     // generate a string from integer, need to clean mem ur self
 
-    String str;
+    sftr_String str;
     if(val == 0) {
         str.count = 1;
         str.val = (char*) malloc(str.count);
@@ -65,12 +69,12 @@ String string_from_int(int val) {
     }
     return str;
 }
-void string_destroy(String* str) {
+void string_destroy(sftr_String* str) {
     free(str->val);
 }
 
-Canvas canvas_new(int w, int h) {
-    Canvas canvas = {.w = w, .h = h};
+sftr_Canvas canvas_new(int w, int h) {
+    sftr_Canvas canvas = {.w = w, .h = h};
     canvas.pixels = (Pixel*) malloc(sizeof(Pixel) * w * h);
     for (size_t i = 0; i < canvas.w * canvas.h; i++) {
         canvas.pixels[i].color.r = 0;
@@ -80,27 +84,28 @@ Canvas canvas_new(int w, int h) {
     
     return canvas;
 }
-void canvas_destroy(Canvas canvas) {
+void canvas_destroy(sftr_Canvas canvas) {
     free(canvas.pixels);
 }
 
-Color canvas_hex_to_color(Int32 color) {
+sftr_Color canvas_hex_to_color(sftr_Int32 color) {
     if(color <= 0xFFFFFF) {
         color <<= 8;
+        color |= 0xFF;
     } 
     return HexToColor(color);
 }
-void canvas_clear(Canvas canvas,Int32 color) {
-    Color c = canvas_hex_to_color(color); 
+void canvas_clear(sftr_Canvas canvas,sftr_Int32 color) {
+    sftr_Color c = canvas_hex_to_color(color); 
     for (size_t y = 0; y < canvas.h; y++)
         for (size_t x = 0; x < canvas.w; x++) {
             canvas.pixels[x + y * canvas.w].color = c;
         }
 }
 
-int canvas_to_ppm(Canvas canvas,const char* file_name) {
-    String str_w;
-    String str_h;
+int canvas_to_ppm(sftr_Canvas canvas,const char* file_name) {
+    sftr_String str_w;
+    sftr_String str_h;
 
     FILE* f = fopen(file_name,"wb");
     if(f == NULL)  {
@@ -122,9 +127,9 @@ int canvas_to_ppm(Canvas canvas,const char* file_name) {
 
 
     for (size_t i = 0; i < canvas.h * canvas.w; i++) {
-            String r = string_from_int(canvas.pixels[i].color.r);            
-            String g = string_from_int(canvas.pixels[i].color.g);            
-            String b = string_from_int(canvas.pixels[i].color.b);            
+            sftr_String r = string_from_int(canvas.pixels[i].color.r);            
+            sftr_String g = string_from_int(canvas.pixels[i].color.g);            
+            sftr_String b = string_from_int(canvas.pixels[i].color.b);            
 
             fwrite(r.val,1,r.count,f);
             fwrite(" ",1,1,f);
@@ -144,7 +149,7 @@ int canvas_to_ppm(Canvas canvas,const char* file_name) {
 }
 
 
-void canvas_draw_line(Canvas canvas,int x1,int y1, int x2,int y2,Int32 c) {
+void canvas_draw_line(sftr_Canvas canvas,int x1,int y1, int x2,int y2,sftr_Int32 c) {
 
     double a = 0;
     if(x1 != x2) {
@@ -167,6 +172,30 @@ void canvas_draw_line(Canvas canvas,int x1,int y1, int x2,int y2,Int32 c) {
 
 }
 
+
+void canvas_draw_rect(sftr_Canvas canvas, int x, int y, int w , int h, sftr_Int32 color) {
+    assert(w >= 0 && "[Error] in canvas_draw_rect: rect width cant be negative");
+    assert(h >= 0 && "[Error] in canvas_draw_rect: rect height cant be negative");
+
+    if(x > canvas.w || y > canvas.h) {
+        return;
+    }
+
+    if(x + w > canvas.w) { w = canvas.w - x ; }
+    if(y + h > canvas.h) { h = canvas.h - y ; }
+    if(x < 0) { x = 0; }
+    if(y < 0) { y = 0; }
+
+
+
+
+    for (int j = 0; j < h; j++)
+        for (int i = 0; i < w; i++) {
+            canvas_draw_pixel(canvas, i + x, j + y,color);
+        }
+    
+
+}
 
 
 

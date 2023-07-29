@@ -18,7 +18,7 @@
                          }
 
 // #define canvas_draw_pixel(canvas,x,y,c) canvas.pixels[(x) + (y) * canvas.w].color = canvas_hex_to_color((c)) 
-#define SWAP(type,a,b) { type t = a; a = b; b = t;  } 
+#define sftr_SWAP(type,a,b) { type t = a; a = b; b = t;  } 
 const double sftr_PI = 3.14159265358979311599796346854;
 #define sftr_to_radians(angle) angle * sftr_PI / 180;
 
@@ -156,20 +156,20 @@ void canvas_draw_pixel(sftr_Canvas canvas,int x,int y,sftr_Int32 c) {
 } 
 
 void canvas_draw_line(sftr_Canvas canvas,int x1,int y1, int x2,int y2,sftr_Int32 c) {
-
     double a = 0;
     if(x1 != x2) {
         if(x1 > x2) {
-            SWAP(int,y1,y2);
-            SWAP(int,x1,x2);
+            sftr_SWAP(int,x1,x2);
+            sftr_SWAP(int,y1,y2);
         }
         a = (double)(y1 - y2)/(x1 - x2); 
+        double b = y1 - a * x1;
         for (size_t x = x1; x < x2; x++) {
-            canvas_draw_pixel(canvas,x,(int) (a * x + y1),c);
+            canvas_draw_pixel(canvas,x,(int) (a * x + b),c);
         }
     } else {
         if(y1 > y2) {
-            SWAP(int,y1,y2);
+            sftr_SWAP(int,y1,y2);
         }
         for (size_t y = y1; y < y2; y++) {
             canvas_draw_pixel(canvas,x1,y,c);

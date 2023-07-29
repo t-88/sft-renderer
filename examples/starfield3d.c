@@ -14,7 +14,7 @@ typedef struct Star {
 static Star stars[START_COUNT];
 
 
-static float STAR_SPEED = 0.8;
+static float STAR_SPEED = 0.8; 
 static double FOV = sftr_to_radians(90); 
 static sftr_Canvas canvas; 
 static RayLibBackend raylib_backend;

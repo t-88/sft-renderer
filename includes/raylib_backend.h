@@ -55,11 +55,13 @@ void raylib_backend_run(RayLibBackend* backend) {
         BeginDrawing();
             DrawTextureRec(texture, (Rectangle) { 0, 0, (float)w, (float)-h }, (Vector2) { 0, 0 }, WHITE);
         EndDrawing();
+
+        // memory leak??
+        UnloadTexture(texture);
     }
     
 
 
-    UnloadTexture(texture);
     free(pixels);
 }
 

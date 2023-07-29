@@ -17,9 +17,10 @@
                             .a = ((color) >> 8 * 0) & 0xFF  \
                          }
 
-#define canvas_draw_pixel(canvas,x,y,c) canvas.pixels[(x) + (y) * canvas.w].color = canvas_hex_to_color((c)) 
+// #define canvas_draw_pixel(canvas,x,y,c) canvas.pixels[(x) + (y) * canvas.w].color = canvas_hex_to_color((c)) 
 #define SWAP(type,a,b) { type t = a; a = b; b = t;  } 
-
+const double sftr_PI = 3.14159265358979311599796346854;
+#define sftr_to_radians(angle) angle * sftr_PI / 180;
 
 
 
@@ -148,6 +149,11 @@ int canvas_to_ppm(sftr_Canvas canvas,const char* file_name) {
     fclose(f);  
 }
 
+void canvas_draw_pixel(sftr_Canvas canvas,int x,int y,sftr_Int32 c) {
+    if(0 <= x  && x < canvas.w &&  0 <= y && y < canvas.h) {
+        canvas.pixels[x + y * canvas.w].color = canvas_hex_to_color(c);
+    }
+} 
 
 void canvas_draw_line(sftr_Canvas canvas,int x1,int y1, int x2,int y2,sftr_Int32 c) {
 

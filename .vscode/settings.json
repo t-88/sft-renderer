@@ -3,6 +3,7 @@
         "raylib.h": "c",
         "sft_renderer.h": "c",
         "raylib_backend.h": "c",
-        "time.h": "c"
+        "time.h": "c",
+        "*.m": "c"
     }
 }

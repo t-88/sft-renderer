@@ -10,20 +10,39 @@ sftr_Canvas canvas;
 RayLibBackend raylib_backend;
 
 sftr_Matrix translated;
-sftr_Matrix rotated;
+sftr_Matrix rotated_y;
+sftr_Matrix rotated_x;
+sftr_Matrix rotated_z;
+sftr_Matrix scaled;
+sftr_Matrix screen_space;
 
+
+double t;
 sftr_Vector4 points[4];
 void render();
 
+
 int main(void) {
     canvas = canvas_new(400,400);
+    t = 0;
 
 
+    sftr_vector_fill(points[0],0   ,0.5,0,1);
+    sftr_vector_fill(points[1],0.5 ,0,0,1);
+    sftr_vector_fill(points[2],-0.5,0,0,1);
 
-    sftr_matrix_translate((sftr_Vector4){-150-50,-150-50,0,1} ,translated);
-    sftr_vector_fill(points[0],150,150,0,1);
-    sftr_vector_fill(points[1],150,250,0,1);
-    sftr_vector_fill(points[2],250,250,0,1);
+    sftr_matrix_rotate_y(rotated_y,0.1);
+    sftr_matrix_rotate_x(rotated_x,0.01);
+    sftr_matrix_rotate_z(rotated_z,0.01);
+    sftr_matrix_scale((sftr_Vector4){1,1,1,1},scaled);
+    sftr_matrix_translate((sftr_Vector4){0,0,0,1},translated);
+
+    for (size_t i = 0; i < 3; i++) {
+        points[i] = sftr_matrix_mult_vector(scaled,points[i]);
+    }
+
+    sftr_matrix_screen_space(screen_space,400,400);
+
 
 
     render();
@@ -38,20 +57,20 @@ int main(void) {
 
 void render() {
     canvas_clear(canvas,0x0000000);
-    
+    t += raylib_backend.dt;
 
-    sftr_matrix_rotate_z(rotated,sin(raylib_backend.dt));
+    sftr_Vector4 ps[3];
+
     for (size_t i = 0; i < 3; i++) {
-        points[i] = sftr_matrix_mult_vector(translated,points[i]);
-        points[i] = sftr_matrix_mult_vector(rotated,points[i]);
-        
-        sftr_Matrix inv;
-        sftr_matrix_inverse(translated,inv);
-        points[i] = sftr_matrix_mult_vector(inv,points[i]);
+        points[i] = sftr_matrix_mult_vector(rotated_z,points[i]);
+        points[i] = sftr_matrix_mult_vector(rotated_y,points[i]);
+        points[i] = sftr_matrix_mult_vector(rotated_x,points[i]);
+
+        ps[i] = sftr_matrix_mult_vector(screen_space,points[i]);
     }
 
-    canvas_draw_traingle(canvas,points[0].x,points[0].y,
-                                points[1].x,points[1].y,
-                                points[2].x,points[2].y,
+    canvas_draw_traingle(canvas,ps[0].x,ps[0].y,
+                                ps[1].x,ps[1].y,
+                                ps[2].x,ps[2].y,
                                 0xFF0000);
 }

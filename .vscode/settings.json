@@ -4,6 +4,8 @@
         "sft_renderer.h": "c",
         "raylib_backend.h": "c",
         "time.h": "c",
-        "*.m": "c"
+        "*.m": "c",
+        "stdbool.h": "c",
+        "sft_math.h": "c"
     }
 }

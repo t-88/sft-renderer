@@ -20,7 +20,7 @@
 // #define canvas_draw_pixel(canvas,x,y,c) canvas.pixels[(x) + (y) * canvas.w].color = canvas_hex_to_color((c)) 
 #define sftr_SWAP(type,a,b) { type t = a; a = b; b = t;  } 
 const double sftr_PI = 3.14159265358979311599796346854;
-#define sftr_to_radians(angle) angle * sftr_PI / 180;
+#define sftr_to_radians(angle) angle * sftr_PI / 180
 
 
 
@@ -157,6 +157,7 @@ void canvas_draw_pixel(sftr_Canvas canvas,int x,int y,sftr_Int32 c) {
 
 
 //TODO: Understand this shit plz
+// https://saturncloud.io/blog/bresenham-line-algorithm-a-powerful-tool-for-efficient-line-drawing/
 void canvas_draw_line(sftr_Canvas canvas,int x1,int y1, int x2,int y2,sftr_Int32 c) {
     // bresenham algorithm
     int dx = abs(x2 - x1);
@@ -241,7 +242,7 @@ void canvas_draw_circle(sftr_Canvas canvas,int x,int y,int r , sftr_Int32 color)
 }
 
 // TODO: make better
-void canvas_draw_traingle(sftr_Canvas canvas,int x1,int y1,int x2,int y2,int x3,int y3) {
+void canvas_draw_traingle(sftr_Canvas canvas,int x1,int y1,int x2,int y2,int x3,int y3,sftr_Int32 color) {
     // top y
     if(y1 > y2) {sftr_SWAP(int,y2,y1);sftr_SWAP(int,x2,x1);}
     if(y1 > y3) {sftr_SWAP(int,y1,y3);sftr_SWAP(int,x1,x3);}
@@ -264,7 +265,7 @@ void canvas_draw_traingle(sftr_Canvas canvas,int x1,int y1,int x2,int y2,int x3,
         if(d13 != 0) {
             x13 = (y - b13) * d13;
         }
-        canvas_draw_line(canvas,x12,y,x13,y,0xFFFFFF);
+        canvas_draw_line(canvas,x12,y,x13,y,color);
     }
 
     float d32 = (float)(x3 - x2) / (y3 - y2);
@@ -278,7 +279,7 @@ void canvas_draw_traingle(sftr_Canvas canvas,int x1,int y1,int x2,int y2,int x3,
         if(d13 != 0) {
             x13 = (y - b13) * d13;
         }
-        canvas_draw_line(canvas,x13,y,x32,y,0xFFFFFF);
+        canvas_draw_line(canvas,x13,y,x32,y,color);
     }
 }
 

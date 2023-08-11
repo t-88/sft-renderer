@@ -1,12 +1,19 @@
+INCLUDES = -Iincludes/ -lm -lraylib 
+
 main:
-	cc main.c -o main -Iincludes/ -lm -lraylib
-	./main
-	rm main
+	cc $@.c -o $@ $(INCLUDES)
+	./$@
+	rm $@
 
 
 starfield3d:
-	cc examples/starfield3d.c -o examples/starfield3d -Iincludes/ -lm -lraylib
-	./examples/starfield3d
-	rm examples/starfield3d
+	cc examples/$@.c -o examples/$@ $(INCLUDES)
+	./examples/$@
+	rm examples/$@
+tringle_transformations:
+	cc examples/$@.c -o examples/$@ $(INCLUDES)
+	./examples/$@
+	rm examples/$@
+
 
   

@@ -3,6 +3,7 @@
 
 typedef double sftr_Matrix[4][4];
 
+
 typedef struct sftr_Vector4 {
     double x , y, z ,w;
 } sftr_Vector4;
@@ -117,13 +118,13 @@ void sftr_matrix_rotate_y(sftr_Matrix m,double angle) {
         0 , 0  , 0 , 1
     );
 }
-sftr_Vector4 sftr_matrix_mult_vector(sftr_Matrix m1,sftr_Vector4 v1) { 
+sftr_Vector4 sftr_matrix_mult_vector(sftr_Matrix m_in,sftr_Vector4 v_in) { 
     double arr_v[] = {0,0,0,0};
-    double arr_v1[] = sftr_vector_to_arr(v1);
+    double arr_v1[] = sftr_vector_to_arr(v_in);
 
     for (size_t j = 0; j < 4; j++)
         for (size_t k = 0; k < 4; k++)
-            arr_v[j] += m1[j][k] * arr_v1[k];
+            arr_v[j] += m_in[j][k] * arr_v1[k];
 
     sftr_Vector4 v2; 
     v2 = sftr_vector_from_arr(arr_v);

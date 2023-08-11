@@ -6,6 +6,12 @@
         "time.h": "c",
         "*.m": "c",
         "stdbool.h": "c",
-        "sft_math.h": "c"
+        "sft_math.h": "c",
+        "array": "c",
+        "compare": "c",
+        "functional": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c"
     }
 }

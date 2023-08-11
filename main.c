@@ -2,9 +2,10 @@
 #include "sft_math.h"
 #include "raylib_backend.h"
 
+
 #include <stdbool.h>
 #include <assert.h>
-
+#include <math.h>
 
 #define  sftr_min(type) \
     type sftr_min_##type(type a,type b) {\
@@ -16,6 +17,12 @@
 sftr_min(int);
 sftr_min(double);
 sftr_min(float);
+
+
+typedef struct sftr_Vertex {
+    sftr_Vector4 pos;
+    sftr_Vector4 color;
+} sftr_Vertex;
 
 sftr_Canvas canvas;
 RayLibBackend raylib_backend;
@@ -39,106 +46,42 @@ void sftr_barycentric_inter(sftr_Vector4 a,sftr_Vector4 b,sftr_Vector4 c,sftr_Ve
 
 
 
-void canvas_draw_bary_traingle(sftr_Canvas canvas,double x1,double y1,double x2,double y2,double x3,double y3,sftr_Matrix screen_space,sftr_Matrix transformation) {
-    sftr_Vector4 a = {x1,y1,0,1};
-    sftr_Vector4 b = {x2,y2,0,1};
-    sftr_Vector4 c = {x3,y3,0,1};
+void canvas_draw_bary_traingle(sftr_Canvas canvas,sftr_Vertex a,sftr_Vertex b,sftr_Vertex c) {
+    int min_x = a.pos.x;
+    if(min_x > b.pos.x) min_x = b.pos.x;
+    if(min_x > c.pos.x) min_x = c.pos.x;
 
-    a = sftr_matrix_mult_vector(screen_space,a);
-    b = sftr_matrix_mult_vector(screen_space,b);
-    c = sftr_matrix_mult_vector(screen_space,c);
+    int max_x = a.pos.x;
+    if(max_x < b.pos.x) max_x = b.pos.x;
+    if(max_x < c.pos.x) max_x = c.pos.x;
 
-    
-    if(a.y > b.y) {sftr_SWAP(sftr_Vector4,b,a);}
-    if(a.y > c.y) {sftr_SWAP(sftr_Vector4,a,c);}
-    if(b.y > c.y) {sftr_SWAP(sftr_Vector4,b,c);}
+    int min_y = a.pos.y;
+    if(min_y > b.pos.y) min_y = b.pos.y;
+    if(min_y > c.pos.y) min_y = c.pos.y;
 
+    int max_y = a.pos.y;
+    if(max_y < b.pos.y) max_y = b.pos.y;
+    if(max_y < c.pos.y) max_y = c.pos.y;
 
-
-
-    float d12 = (float)(a.x - b.x) / (a.y - b.y);
-    float d13 = (float)(a.x - c.x) / (a.y - c.y);
-    float b12 = a.y - a.x / d12;
-    float b13 = a.y - a.x / d13;
-
-
-    for (int y = a.y; y < b.y; y++) {
-        int x12 = a.x;
-        if(d12 != 0) {
-            x12 = (y - b12) * d12;
-        }
-        int x13 = a.x;
-        if(d13 != 0) {
-            x13 = (y - b13) * d13;
-        }
-        if(x12 > x13) {
-            sftr_SWAP(int,x12,x13);
-        }
-        for (int x = x12; x < x13; x++) {
+    for (int y = min_y; y < max_y; y++) {
+        for (int x = min_x; x < max_x; x++) {
+            double w1,w2,w3;
             sftr_Vector4 p = {x,y,0,1};
-            double w1 , w2 , w3;
 
-            sftr_barycentric_inter(a,b,c,p,&w1,&w2,&w3);
-
-            int r = sftr_min_double(255,255 * w1);
-            int g = sftr_min_double(255,255 * w2); 
-            int b = sftr_min_double(255,255 * w3);
-
-            sftr_Int32 color = r << 16 | g << 8 | b << 0; 
-
-            sftr_Matrix inv;
-            sftr_matrix_inverse(screen_space,inv);
+            sftr_barycentric_inter(a.pos,b.pos,c.pos,p,&w1,&w2,&w3);
+            if(w1 >= 0 && w2 >= 0 && w1 + w2 <= 1) {
+                int r = sftr_min_double(255,a.color.x * w1) + sftr_min_double(255,a.color.y * w1) + sftr_min_double(255,a.color.z * w1);
+                int g = sftr_min_double(255,b.color.x * w2) + sftr_min_double(255,b.color.y * w2) + sftr_min_double(255,b.color.z * w2);
+                int b = sftr_min_double(255,c.color.x * w3) + sftr_min_double(255,c.color.y * w3) + sftr_min_double(255,c.color.z * w3);
 
 
-            sftr_Vector4 v = sftr_matrix_mult_vector(inv,(sftr_Vector4){x,y,0,1});
-            v = sftr_matrix_mult_vector(transformation,v);
-            v = sftr_matrix_mult_vector(screen_space,v);
+                sftr_Int32 color = r << 16 | g << 8 | b << 0; 
 
-            canvas_draw_pixel(canvas,v.x,v.y,color);
+                canvas_draw_pixel(canvas,p.x,p.y,color);
+            }
         }
     }
 
-
-    
-
-    float d32 = (float)(c.x - b.x) / (c.y - b.y);
-    float b32 = b.y -  b.x / d32; 
-    for (int y = b.y; y < c.y; y++) {
-        int x32 = a.x;
-        if(d32 != 0) {
-            x32 = (y - b32) * d32;
-        }
-        int x13 = a.x;
-        if(d13 != 0) {
-            x13 = (y - b13) * d13;
-        }
-        if(x13 > x32) {
-            sftr_SWAP(int,x13,x32);
-        }
-        for (int x = x13; x < x32; x++) {
-            sftr_Vector4 p = {x,y,0,1};
-            double w1 , w2 , w3;
-
-            sftr_barycentric_inter(a,b,c,p,&w1,&w2,&w3);
-
-            int r = sftr_min_double(255,255 * w1);
-            int g = sftr_min_double(255,255 * w2); 
-            int b = sftr_min_double(255,255 * w3);
-
-            sftr_Int32 color = r << 16 | g << 8 | b << 0; 
-
-
-            sftr_Matrix inv;
-            sftr_matrix_inverse(screen_space,inv);
-
-            sftr_Vector4 v = sftr_matrix_mult_vector(inv,(sftr_Vector4){x,y,0,1});
-            v = sftr_matrix_mult_vector(transformation,v);
-            v = sftr_matrix_mult_vector(screen_space,v);
-
-            canvas_draw_pixel(canvas,v.x,v.y,color);
-
-        }
-    }
 }
 
 
@@ -174,11 +117,20 @@ void render() {
     t += raylib_backend.dt;
 
 
-    sftr_matrix_rotate_z(rotation,sftr_PI * sin(t));
+    sftr_matrix_rotate_z(rotation,t);
 
-    canvas_draw_bary_traingle(canvas,points[0].x,points[0].y,
-                                     points[1].x,points[1].y,
-                                     points[2].x,points[2].y,
-                                     screen_space,
-                                     rotation);
+
+    sftr_Vertex ps[3];
+    ps[0].color = (sftr_Vector4){255,0,0,0};
+    ps[1].color = (sftr_Vector4){0,255,0,0};
+    ps[2].color = (sftr_Vector4){0,0,255,0};
+    for (size_t i = 0; i < 3; i++) {
+        ps[i].pos = sftr_matrix_mult_vector(rotation,points[i]) ;
+        ps[i].pos = sftr_matrix_mult_vector(screen_space,ps[i].pos) ;
+    }
+    
+
+    canvas_draw_bary_traingle(canvas,ps[0],
+                                     ps[1],
+                                     ps[2]);
 }

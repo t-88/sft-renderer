@@ -1,10 +1,259 @@
-#ifndef SFT_RENDERER_H
-#define SFT_RENDERER_H
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
+#include <stdbool.h>
+
+#ifndef SFT_MATH_H 
+#define SFT_MATH_H 
+
+typedef double sftr_Matrix[4][4];
+
+
+typedef struct sftr_Vector4 {
+    double x , y, z ,w;
+} sftr_Vector4;
+
+
+typedef struct sftr_Vertex {
+    sftr_Vector4 pos;
+    sftr_Vector4 color;
+} sftr_Vertex;
+
+
+#define sftr_matrix_det_3x3(a00,a01,a02,a10,a11,a12,a20,a21,a22) (double)((a00*a11*a22+a01*a12*a20+a02*a10*a21) - \
+                                                                 (a02*a11*a20+a00*a12*a21+a01*a10*a22))
+#define sftr_matrix_det_2x2(a00,a01,a10,a11) (double)(a00*a11 - a01 * a11)
+
+#define sftr_matrix_fill(m,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15) do {\
+    m[0][0] = a0; m[0][1] = a1; m[0][2] =   a2; m[0][3] =  a3;\
+    m[1][0] = a4; m[1][1] =  a5; m[1][2] =  a6; m[1][3] =  a7;\
+    m[2][0] = a8; m[2][1] =  a9; m[2][2] =  a10; m[2][3] = a11;\
+    m[3][0] = a12; m[3][1] = a13; m[3][2] = a14; m[3][3] = a15;\
+} while (0);
+#define sftr_vector_fill(v,a0,a1,a2,a3) do{ \
+    v.x = a0; v.y = a1; v.z =   a2; v.w =  a3;\
+} while (0);
+#define sftr_vector_zero(v) (sftr_Vector4) {0,0,0,0}
+#define sftr_vector_print(v) printf("%f %f %f %f\n",v.x,v.y,v.z,v.w)
+#define sftr_vector_to_arr(v) {v.x,v.y,v.z,v.w}
+#define sftr_vector_from_arr(arr) (sftr_Vector4) {arr[0],arr[1],arr[2],arr[3]}
+
+
+
+
+void sftr_matrix_print(sftr_Matrix m);
+void sftr_matrix_ident(sftr_Matrix m);
+void sftr_matrix_zero(sftr_Matrix m);
+void sftr_matrix_mult_matrix(sftr_Matrix m1,sftr_Matrix m2,sftr_Matrix m3); 
+void sftr_matrix_translate(sftr_Vector4 v,sftr_Matrix m);
+void sftr_matrix_rotate_z(sftr_Matrix m,double angle);
+void sftr_matrix_rotate_x(sftr_Matrix m,double angle);
+void sftr_matrix_rotate_y(sftr_Matrix m,double angle);
+sftr_Vector4 sftr_matrix_mult_vector(sftr_Matrix m1,sftr_Vector4 v1); 
+void sftr_matrix_transpose(sftr_Matrix in, sftr_Matrix out);
+void sftr_matrix_cofactor(sftr_Matrix in, sftr_Matrix out);
+void sftr_matrix_adjugate(sftr_Matrix in, sftr_Matrix out);
+double sftr_matrix_det(sftr_Matrix in);
+void sftr_matrix_mult_number(sftr_Matrix out,double val);
+void  sftr_matrix_inverse(sftr_Matrix in, sftr_Matrix out);
+void sftr_matrix_scale(sftr_Vector4 v,sftr_Matrix m);
+void sftr_matrix_screen_space(sftr_Matrix out,int w, int h);
+void sftr_matrix_screen_space(sftr_Matrix out,int w, int h);
+
+
+void sftr_matrix_print(sftr_Matrix m) {
+    for (size_t j = 0; j < 4; j++) {
+        for (size_t i = 0; i < 4; i++)
+            printf("%f ",m[j][i]);
+        printf("\n");
+    }
+}
+void sftr_matrix_ident(sftr_Matrix m) {
+    for (size_t j = 0; j < 4; j++) 
+        for (size_t i = 0; i < 4; i++) 
+            if (i == j)
+                m[j][i] = 1;
+}
+void sftr_matrix_zero(sftr_Matrix m) {
+    for (size_t j = 0; j < 4; j++) 
+        for (size_t i = 0; i < 4; i++) 
+            m[j][i] = 0;
+}
+void sftr_matrix_mult_matrix(sftr_Matrix m1,sftr_Matrix m2,sftr_Matrix m3) { 
+    sftr_matrix_zero(m3);
+    for (size_t j = 0; j < 4; j++)
+        for (size_t i = 0; i < 4; i++) 
+            for (size_t k = 0; k < 4; k++)
+                m3[j][i] += m1[j][k] * m2[k][i]; 
+}
+void sftr_matrix_translate(sftr_Vector4 v,sftr_Matrix m) {
+    sftr_matrix_fill(
+        m,
+        1 , 0 , 0 , v.x,
+        0 , 1 , 0 , v.y,
+        0 , 0 , 1 , v.z,
+        0 , 0 , 0 , 1
+    );
+}
+void sftr_matrix_rotate_z(sftr_Matrix m,double angle) {
+    double c = cos(angle);
+    double s = sin(angle);
+    sftr_matrix_fill(
+        m,
+        c , -s , 0 , 0,
+        s , c  , 0 , 0,
+        0 , 0  , 1 , 0,
+        0 , 0  , 0 , 1
+    );
+}
+void sftr_matrix_rotate_x(sftr_Matrix m,double angle) {
+    double c = cos(angle);
+    double s = sin(angle);
+    sftr_matrix_fill(
+        m,
+        1 , 0 , 0, 0,
+        0 , c , -s, 0,
+        0 , s , c, 0,
+        0 , 0  , 0 , 1
+    );
+}
+void sftr_matrix_rotate_y(sftr_Matrix m,double angle) {
+    double c = cos(angle);
+    double s = sin(angle);
+    sftr_matrix_fill(
+        m,
+        c , 0 , s , 0,
+        0 ,  1 , 0 , 0,
+        -s , 0  , c , 0,
+        0 , 0  , 0 , 1
+    );
+}
+sftr_Vector4 sftr_matrix_mult_vector(sftr_Matrix m_in,sftr_Vector4 v_in) { 
+    double arr_v[] = {0,0,0,0};
+    double arr_v1[] = sftr_vector_to_arr(v_in);
+
+    for (size_t j = 0; j < 4; j++)
+        for (size_t k = 0; k < 4; k++)
+            arr_v[j] += m_in[j][k] * arr_v1[k];
+
+    sftr_Vector4 v2; 
+    v2 = sftr_vector_from_arr(arr_v);
+    return v2;
+}
+
+void sftr_matrix_transpose(sftr_Matrix in, sftr_Matrix out) {
+    sftr_matrix_fill(
+        out,
+        in[0][0],in[1][0],in[2][0],in[3][0],
+        in[0][1],in[1][1],in[2][1],in[3][1],
+        in[0][2],in[1][2],in[2][2],in[3][2],
+        in[0][3],in[1][3],in[2][3],in[3][3]);
+
+}
+void sftr_matrix_cofactor(sftr_Matrix in, sftr_Matrix out) {
+    sftr_matrix_fill(
+            out,
+            sftr_matrix_det_3x3(in[1][1],in[1][2],in[1][3],in[2][1],in[2][2],in[2][3],in[3][1],in[3][2],in[3][3]),
+            -sftr_matrix_det_3x3(in[1][0],in[1][2],in[1][3],in[2][0],in[2][2],in[2][3],in[3][0],in[3][2],in[3][3]),
+            sftr_matrix_det_3x3(in[1][0],in[1][1],in[1][3],in[2][0],in[2][1],in[2][3],in[3][0],in[3][1],in[3][3]),
+            -sftr_matrix_det_3x3(in[1][0],in[1][1],in[1][2],in[2][0],in[2][1],in[2][2],in[3][0],in[3][1],in[3][2]),
+
+            -sftr_matrix_det_3x3(in[0][1],in[0][2],in[0][3],in[2][1],in[2][2],in[2][3],in[3][1],in[3][2],in[3][3]),
+            sftr_matrix_det_3x3(in[0][0],in[0][2],in[0][3],in[2][0],in[2][2],in[2][3],in[3][0],in[3][2],in[3][3]),
+            -sftr_matrix_det_3x3(in[0][0],in[0][1],in[0][3],in[2][0],in[2][1],in[2][3],in[3][0],in[3][1],in[3][3]),
+            sftr_matrix_det_3x3(in[0][0],in[0][1],in[0][2],in[2][0],in[2][1],in[2][2],in[3][0],in[3][1],in[3][2]),
+
+            sftr_matrix_det_3x3(in[0][1],in[0][2],in[0][3],in[1][1],in[1][2],in[1][3],in[3][1],in[3][2],in[3][3]),
+            -sftr_matrix_det_3x3(in[0][0],in[0][2],in[0][3],in[1][0],in[1][2],in[1][3],in[3][0],in[3][2],in[3][3]),
+            sftr_matrix_det_3x3(in[0][0],in[0][1],in[0][3],in[1][0],in[1][1],in[1][3],in[3][0],in[3][1],in[3][3]),
+            -sftr_matrix_det_3x3(in[0][0],in[0][1],in[0][2],in[1][0],in[1][1],in[1][2],in[3][0],in[3][1],in[3][2]),
+
+            -sftr_matrix_det_3x3(in[0][1],in[0][2],in[0][3],in[1][1],in[1][2],in[1][3],in[2][1],in[2][2],in[2][3]),
+            sftr_matrix_det_3x3(in[0][0],in[0][2],in[0][3],in[1][0],in[1][2],in[1][3],in[2][0],in[2][2],in[2][3]),
+            -sftr_matrix_det_3x3(in[0][0],in[0][1],in[0][3],in[1][0],in[1][1],in[1][3],in[2][0],in[2][1],in[2][3]),
+            sftr_matrix_det_3x3(in[0][0],in[0][1],in[0][2],in[1][0],in[1][1],in[1][2],in[2][0],in[2][1],in[2][2])
+    );
+}
+void sftr_matrix_adjugate(sftr_Matrix in, sftr_Matrix out) {
+    sftr_Matrix tmp;
+    sftr_matrix_cofactor(in,tmp);
+    sftr_matrix_transpose(tmp,out);
+}
+
+
+double sftr_matrix_det(sftr_Matrix in) {
+    double det;
+    det = in[0][0] * sftr_matrix_det_3x3(
+        in[1][1],in[1][2],in[1][3],
+        in[2][1],in[2][2],in[2][3],
+        in[3][1],in[3][2],in[3][3]
+    );
+    det -= in[0][1] * sftr_matrix_det_3x3(
+        in[1][0],in[1][2],in[1][3],
+        in[2][0],in[2][2],in[2][3],
+        in[3][0],in[3][2],in[3][3]
+    );
+    det += in[0][2] * sftr_matrix_det_3x3(
+        in[1][0],in[1][1],in[1][3],
+        in[2][0],in[2][1],in[2][3],
+        in[3][0],in[3][1],in[3][3]
+    );
+    det -= in[0][3] * sftr_matrix_det_3x3(
+        in[1][0],in[1][1],in[1][2],
+        in[2][0],in[2][1],in[2][2],
+        in[3][0],in[3][1],in[3][2]
+    );
+
+    return det;
+}
+void sftr_matrix_mult_number(sftr_Matrix out,double val) {
+    for (size_t j = 0; j < 4; j++) 
+        for (size_t i = 0; i < 4; i++) 
+            out[j][i] *= val;
+}
+void  sftr_matrix_inverse(sftr_Matrix in, sftr_Matrix out) {
+    sftr_matrix_adjugate(in,out);
+    double det = sftr_matrix_det(in);
+    assert(det != 0 && "[Math Error] Cant inverse matrix, det = 0");
+    sftr_matrix_mult_number(out,1/det);
+}
+ 
+
+void sftr_matrix_scale(sftr_Vector4 v,sftr_Matrix m) {
+    sftr_matrix_fill(
+        m,
+        v.x , 0 , 0 , 0,
+        0 , v.y , 0 , 0,
+        0 , 0 , v.z , 0,
+        0 , 0 , 0 , 1
+    );
+}
+
+
+
+void sftr_matrix_screen_space(sftr_Matrix out,int w, int h) {
+    float w_2 = w/2; 
+    float h_2 = h/2; 
+    sftr_matrix_fill(
+        out,
+        w_2 , 0 , 0 , w_2,
+        0 , -h_2 , 0 , h_2,
+        0 , 0 , 1 , 0,
+        0 , 0 , 0 , 1
+    );
+}
+
+#endif // SFT_MATH_H 
+
+#ifndef SFT_RENDERER_H
+#define SFT_RENDERER_H
+
+
+
+
+
 
 
 
@@ -21,6 +270,18 @@
 #define sftr_SWAP(type,a,b) { type t = a; a = b; b = t;  } 
 const double sftr_PI = 3.14159265358979311599796346854;
 #define sftr_to_radians(angle) angle * sftr_PI / 180
+
+
+#define  sftr_min(type) \
+    type sftr_min_##type(type a,type b) {\
+        if(a > b) {\
+            return b;\
+        }\
+        return a;\
+    }
+sftr_min(int);
+sftr_min(double);
+sftr_min(float);
 
 
 
@@ -283,5 +544,56 @@ void canvas_draw_traingle(sftr_Canvas canvas,int x1,int y1,int x2,int y2,int x3,
     }
 }
 
+
+void sftr_barycentric_inter(sftr_Vector4 a,sftr_Vector4 b,sftr_Vector4 c,sftr_Vector4 p,double* w1,double* w2,double* w3) {
+    /* 
+        FROM: https://www.youtube.com/watch?v=HYAgJN3x4GA&ab_channel=SebastianLague
+        Thx SebastianLague :)
+    */
+    double k = b.x-a.x;
+    *w1 = ((p.y - a.y)  * k - (p.x - a.x) * (b.y - a.y)) / ((a.x - c.x) * (b.y - a.y) + (c.y - a.y) * k);
+    *w2 = ((p.x - a.x) - *w1 * (c.x - a.x)) / k;  
+    *w3 =   1 - *w1 - *w2;
+}
+
+
+
+void canvas_draw_bary_traingle(sftr_Canvas canvas,sftr_Vertex a,sftr_Vertex b,sftr_Vertex c) {
+    int min_x = a.pos.x;
+    if(min_x > b.pos.x) min_x = b.pos.x;
+    if(min_x > c.pos.x) min_x = c.pos.x;
+
+    int max_x = a.pos.x;
+    if(max_x < b.pos.x) max_x = b.pos.x;
+    if(max_x < c.pos.x) max_x = c.pos.x;
+
+    int min_y = a.pos.y;
+    if(min_y > b.pos.y) min_y = b.pos.y;
+    if(min_y > c.pos.y) min_y = c.pos.y;
+
+    int max_y = a.pos.y;
+    if(max_y < b.pos.y) max_y = b.pos.y;
+    if(max_y < c.pos.y) max_y = c.pos.y;
+
+    for (int y = min_y; y <= max_y; y++) {
+        for (int x = min_x; x <= max_x; x++) {
+            double w1,w2,w3;
+            sftr_Vector4 p = {x,y,0,1};
+
+            sftr_barycentric_inter(a.pos,b.pos,c.pos,p,&w1,&w2,&w3);
+            if(w1 >= 0 && w2 >= 0 && w1 + w2 <= 1) {
+                int r = sftr_min_double(255,a.color.x * w1) + sftr_min_double(255,a.color.y * w1) + sftr_min_double(255,a.color.z * w1);
+                int g = sftr_min_double(255,b.color.x * w2) + sftr_min_double(255,b.color.y * w2) + sftr_min_double(255,b.color.z * w2);
+                int b = sftr_min_double(255,c.color.x * w3) + sftr_min_double(255,c.color.y * w3) + sftr_min_double(255,c.color.z * w3);
+
+
+                sftr_Int32 color = r << 16 | g << 8 | b << 0; 
+
+                canvas_draw_pixel(canvas,p.x,p.y,color);
+            }
+        }
+    }
+
+}
 
 #endif

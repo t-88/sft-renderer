@@ -2,10 +2,6 @@
 #include "raylib_backend.h"
 
 
-#include <stdbool.h>
-#include <assert.h>
-#include <math.h>
-
 sftr_Canvas canvas;
 RayLibBackend raylib_backend;
 

@@ -11,3 +11,4 @@ basic software renderer, smthing like olivec from tsoding.
 
 ## Dev Imgs
 ![matrix meth resualt](./dev-imgs/matrix_meth.gif)
+![bary traingle](./dev-imgs/bary_traingle.gif)

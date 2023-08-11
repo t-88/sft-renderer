@@ -14,6 +14,11 @@ tringle_transformations:
 	cc examples/$@.c -o examples/$@ $(INCLUDES)
 	./examples/$@
 	rm examples/$@
+bary_traingle:
+	cc examples/$@.c -o examples/$@ $(INCLUDES)
+	./examples/$@
+	rm examples/$@
+
 
 
   

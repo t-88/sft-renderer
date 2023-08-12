@@ -18,6 +18,8 @@ void render();
 
 sftr_Matrix screen_space;
 sftr_Matrix rotation;
+sftr_Matrix translation;
+
 
 int main(void) {
     canvas = canvas_new(400,400);
@@ -49,6 +51,7 @@ void render() {
 
 
     sftr_matrix_rotate_z(rotation,t * 0.5);
+    sftr_matrix_translate((sftr_Vector4) {sin(t) * 0.5,0,0,1},translation);
 
 
     sftr_Vertex ps[3];
@@ -56,7 +59,8 @@ void render() {
     ps[1].color = (sftr_Vector4){0,255,0,0};
     ps[2].color = (sftr_Vector4){0,0,255,0};
     for (size_t i = 0; i < 3; i++) {
-        ps[i].pos = sftr_matrix_mult_vector(rotation,points[i]) ;
+        ps[i].pos = sftr_matrix_mult_vector(translation,points[i]) ;
+        ps[i].pos = sftr_matrix_mult_vector(rotation,ps[i].pos) ;
         ps[i].pos = sftr_matrix_mult_vector(screen_space,ps[i].pos) ;
     }
     

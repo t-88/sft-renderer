@@ -1,12 +1,13 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 #include <stdbool.h>
 
-#ifndef SFT_MATH_H 
-#define SFT_MATH_H 
+
+#ifndef SFT_RENDERER_H
+#define SFT_RENDERER_H
+
 
 typedef double sftr_Matrix[4][4];
 
@@ -39,6 +40,61 @@ typedef struct sftr_Vertex {
 #define sftr_vector_print(v) printf("%f %f %f %f\n",v.x,v.y,v.z,v.w)
 #define sftr_vector_to_arr(v) {v.x,v.y,v.z,v.w}
 #define sftr_vector_from_arr(arr) (sftr_Vector4) {arr[0],arr[1],arr[2],arr[3]}
+
+
+
+
+
+#define HexToColor(color) (sftr_Color) { \
+                            .r = ((color) >> 8 * 3) & 0xFF, \
+                            .g = ((color) >> 8 * 2) & 0xFF, \
+                            .b = ((color) >> 8 * 1) & 0xFF, \
+                            .a = ((color) >> 8 * 0) & 0xFF  \
+                         }
+
+// #define canvas_draw_pixel(canvas,x,y,c) canvas.pixels[(x) + (y) * canvas.w].color = canvas_hex_to_color((c)) 
+#define sftr_SWAP(type,a,b) { type t = a; a = b; b = t;  } 
+const double sftr_PI = 3.14159265358979311599796346854;
+#define sftr_to_radians(angle) angle * sftr_PI / 180
+
+
+#define  sftr_min(type) \
+    type sftr_min_##type(type a,type b) {\
+        if(a > b) {\
+            return b;\
+        }\
+        return a;\
+    }
+sftr_min(int);
+sftr_min(double);
+sftr_min(float);
+
+
+
+
+typedef  unsigned int sftr_Int32;
+
+typedef struct sftr_String {
+    char* val;
+    size_t count;
+} sftr_String;
+
+
+
+
+typedef struct sftr_Color {
+    unsigned char r , g , b , a;
+
+} sftr_Color;
+typedef struct Pixel {
+    sftr_Color color;
+} Pixel;
+
+typedef struct sftr_Canvas {
+    int w , h;
+    Pixel* pixels; 
+} sftr_Canvas;
+
 
 
 
@@ -221,6 +277,114 @@ void  sftr_matrix_inverse(sftr_Matrix in, sftr_Matrix out) {
 }
  
 
+
+
+void sftr_matrix_copy(sftr_Matrix in, sftr_Matrix out) {
+    for (size_t j = 0; j < 4; j++) {
+        for (size_t i = 0; i < 4; i++) {
+            out[j][i] = in[j][i];
+        }
+    }
+}
+
+static void sftr_matrix_rowop_swap(sftr_Matrix in,int src,int dest) {
+    for (size_t i = 0; i < 4; i++) {
+        sftr_SWAP(double,in[src][i],in[dest][i]);
+    }
+}
+static void sftr_matrix_rowop_mult(sftr_Matrix in,int row,double val) { 
+    for (size_t i = 0; i < 4; i++) {
+        in[row][i] *= val;
+    }
+}
+static void sftr_matrix_rowop_add(sftr_Matrix in,int src,int dest) { 
+    for (size_t i = 0; i < 4; i++) {
+        in[dest][i] += in[src][i];
+    }
+}
+static void sftr_matrix_rowop_mult_add(sftr_Matrix in,int src,double val ,int dest) { 
+    for (int i = 0; i < 4; i++) {
+        in[dest][i] += in[src][i] * val;
+    }
+}
+
+
+
+
+
+void sftr_matrix_invert_gauss(sftr_Matrix in,sftr_Matrix out) {
+    sftr_matrix_ident(out);
+    sftr_Matrix cp;
+    sftr_matrix_copy(in,cp);
+    
+
+
+    // check for pivot
+    for (int i = 0; i < 4; i++) {
+        if(cp[i][i] == 0) {
+            int val = -1;
+            int row;
+            if(i < 3) {
+                for (int j = i + 1; j < 4; j++) {
+                    int m = abs(cp[j][i]); 
+                    if(m > val) {
+                        val = m;
+                        row = j;
+                    }
+                }
+            }
+            if(i > 0) {
+                for (int j = i - 1; j >= 0; j--) {
+                    int m = abs(cp[j][i]); 
+                    if(m > val) {
+                        val = m;
+                        row = j;
+                    }
+                }
+            }
+
+            if(val == 0) {
+                assert(0 && "Matrix cannot be inverted");
+            }
+            sftr_matrix_rowop_swap(cp,i,row);
+            sftr_matrix_rowop_swap(out,i,row);
+        }
+    }
+
+
+    // zero out first section
+    for (int j = 1; j < 4; j++) {
+        for (int i = 0; i < j; i++) {
+            if(cp[j][i] != 0) {
+
+                double val = -cp[j][i]/cp[i][i];
+
+                sftr_matrix_rowop_mult_add(cp, i,val,j);
+                sftr_matrix_rowop_mult_add(out,i,val,j);
+    
+                assert(cp[j][i] == 0 && "WTF, this must be a zero");
+            } 
+        }
+    }
+    
+
+    // one the pivot
+    for (int j = 0; j < 4; j++) {
+        double val = 1/cp[j][j];
+        sftr_matrix_rowop_mult(cp,j,val);
+        sftr_matrix_rowop_mult(out,j,val);
+    }
+
+    // zero out second section
+    for (int j = 2; j >= 0; j--) {
+        for (int i = 3; i > j; i--) {
+            if(cp[j][i] != 0) {
+                sftr_matrix_rowop_mult_add(out, i ,-cp[j][i],j);
+            }
+        }
+    }
+}
+
 void sftr_matrix_scale(sftr_Vector4 v,sftr_Matrix m) {
     sftr_matrix_fill(
         m,
@@ -244,71 +408,6 @@ void sftr_matrix_screen_space(sftr_Matrix out,int w, int h) {
         0 , 0 , 0 , 1
     );
 }
-
-#endif // SFT_MATH_H 
-
-#ifndef SFT_RENDERER_H
-#define SFT_RENDERER_H
-
-
-
-
-
-
-
-
-
-
-#define HexToColor(color) (sftr_Color) { \
-                            .r = ((color) >> 8 * 3) & 0xFF, \
-                            .g = ((color) >> 8 * 2) & 0xFF, \
-                            .b = ((color) >> 8 * 1) & 0xFF, \
-                            .a = ((color) >> 8 * 0) & 0xFF  \
-                         }
-
-// #define canvas_draw_pixel(canvas,x,y,c) canvas.pixels[(x) + (y) * canvas.w].color = canvas_hex_to_color((c)) 
-#define sftr_SWAP(type,a,b) { type t = a; a = b; b = t;  } 
-const double sftr_PI = 3.14159265358979311599796346854;
-#define sftr_to_radians(angle) angle * sftr_PI / 180
-
-
-#define  sftr_min(type) \
-    type sftr_min_##type(type a,type b) {\
-        if(a > b) {\
-            return b;\
-        }\
-        return a;\
-    }
-sftr_min(int);
-sftr_min(double);
-sftr_min(float);
-
-
-
-
-typedef  unsigned int sftr_Int32;
-
-typedef struct sftr_String {
-    char* val;
-    size_t count;
-} sftr_String;
-
-
-
-
-typedef struct sftr_Color {
-    unsigned char r , g , b , a;
-
-} sftr_Color;
-typedef struct Pixel {
-    sftr_Color color;
-} Pixel;
-
-typedef struct sftr_Canvas {
-    int w , h;
-    Pixel* pixels; 
-} sftr_Canvas;
-
 
 sftr_String string_from_int(int val) {
     // generate a string from integer, need to clean mem ur self

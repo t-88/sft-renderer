@@ -31,16 +31,12 @@
 
 #define sftr_to_radians(angle) angle * sftr_PI / 180
 #define sftr_PI  ((double) 3.14159265358979311599796346854)
-#define  sftr_min(type) \
-    type sftr_min_##type(type a,type b) {\
-        if(a > b) {\
-            return b;\
-        }\
-        return a;\
-    }
-sftr_min(int);
-sftr_min(double);
-sftr_min(float);
+
+// auto generated functions
+#define  sftr_min(type) type sftr_min_##type(type a,type b) { if(a > b) { return b; } return a;}
+#define lerp(type)  double lerp_##type(type a, type b,type c) {return a + (b - a) * c;} 
+
+
 
 
 // graphics macros
@@ -65,6 +61,9 @@ typedef struct sftr_Vector4 {
     double x , y, z ,w;
 } sftr_Vector4;
 
+typedef struct sftr_Vector2 {
+    double x , y;
+} sftr_Vector2;
 
 typedef struct sftr_Vertex {
     sftr_Vector4 pos;
@@ -139,6 +138,7 @@ void canvas_draw_line(sftr_Canvas canvas,int x1,int y1, int x2,int y2,sftr_Int32
 void canvas_draw_rect(sftr_Canvas canvas, int x, int y, int w , int h, sftr_Int32 color);
 void canvas_draw_circle(sftr_Canvas canvas,int x,int y,int r , sftr_Int32 color);
 void canvas_draw_traingle(sftr_Canvas canvas,int x1,int y1,int x2,int y2,int x3,int y3,sftr_Int32 color);
+void canvas_draw_traingle_lined(sftr_Canvas canvas,int x1,int y1,int x2,int y2,int x3,int y3,sftr_Int32 color);
 void canvas_draw_bary_traingle(sftr_Canvas canvas,sftr_Vertex a,sftr_Vertex b,sftr_Vertex c);
 
 void sftr_barycentric_inter(sftr_Vector4 a,sftr_Vector4 b,sftr_Vector4 c,sftr_Vector4 p,double* w1,double* w2,double* w3);
@@ -148,6 +148,14 @@ void sftr_barycentric_inter(sftr_Vector4 a,sftr_Vector4 b,sftr_Vector4 c,sftr_Ve
 
 
 #ifdef SFTR_RENDERER_IMPL
+
+sftr_min(int);
+sftr_min(double);
+sftr_min(float);
+
+lerp(int);
+lerp(double);
+lerp(float);
 
 // matrix row ops
 void sftr_matrix_rowop_swap(sftr_Matrix in,int src,int dest) {
@@ -561,45 +569,79 @@ void canvas_draw_pixel(sftr_Canvas canvas,int x,int y,sftr_Int32 c) {
         canvas.pixels[x + y * canvas.w].color = canvas_hex_to_color(c);
     }
 } 
-void canvas_draw_line(sftr_Canvas canvas,int x1,int y1, int x2,int y2,sftr_Int32 c) {
-    //TODO: Understand this shit plz
-    // https://saturncloud.io/blog/bresenham-line-algorithm-a-powerful-tool-for-efficient-line-drawing/
+void canvas_draw_line(sftr_Canvas canvas,int x0,int y0, int x1,int y1,sftr_Int32 color) {
 
-    // bresenham algorithm
-    int dx = abs(x2 - x1);
-    int dy = abs(y2 - y1);
-    int slope = dy > dx;
+#if 0
+    // still dont understand wtf is going on 
+    // check out https://zingl.github.io/bresenham.html
+    //TODO: implement it from scratch then simplfy
 
-    if (slope) {
-        sftr_SWAP(int,x1, y1);
-        sftr_SWAP(int,x2, y2);
+    int dx = abs(x1-x0),  sx = x0 < x1 ? 1 : -1;
+    int dy = abs(y1-y0),  sy = y0 < y1 ? 1 : -1; 
+        
+    int err = (dx>dy ? dx : -dy)/2, e2;
+
+    for(;;){
+        canvas_draw_pixel(canvas,x0,y0,color);
+
+        if (x0==x1 && y0==y1) break;
+        e2 = err;
+        if (e2 >-dx) { err -= dy; x0 += sx; }
+        if (e2 < dy) { err += dx; y0 += sy; }
     }
 
-    if (x1 > x2) {
-        sftr_SWAP(int,x1, x2);
-        sftr_SWAP(int,y1, y2);
-    }
 
-    dx = abs(x2 - x1);
-    dy = abs(y2 - y1);
-    int err = dx / 2;
-    int y = y1;
-    int ystep = y1 < y2 ? 1 : -1;
 
-    for (int x = x1; x <= x2; x++) {
-        if(slope) {
-            canvas_draw_pixel(canvas,y,x,c);
-        } else {
-            canvas_draw_pixel(canvas,x,y,c);
+#else    
+    //simplest way to draw line
+    // DDA?
+
+    // lines leave pixels not filled bc i focus on one axis
+    // we can find multiple values of y for one x 
+    // and same for y
+    // we have to calculate dx and dy and take the smallest one and draw accordingly
+
+
+
+    int dx = x0 - x1;
+    int dy = y0 - y1;
+
+    // we figure out what axis has the most pixels 
+    // then we draw a line using that axis
+    // we get the equation using
+    // P = P0 + (P1 - P0) * t
+
+
+    // should use abs 
+    if(abs(dx) > abs(dy)) {
+        if (x0 > x1) {
+            sftr_SWAP(int,x0,x1);
+            sftr_SWAP(int,y0,y1);
         }
-        err -= dy;
 
-        if (err < 0) {
-            y += ystep;
-            err += dx;
+        float y = y0;
+        float a = (float) dy / dx;
+
+        for (int x = x0; x <= x1; x++) {
+            canvas_draw_pixel(canvas,x,y,color);
+            y = y + a;
         }
-    }
-    
+    } else {
+        if (y0 > y1) {
+            sftr_SWAP(int,x0,x1);
+            sftr_SWAP(int,y0,y1);
+        }
+
+
+        float x = x0;
+        float a = (float) dx / dy  ;
+
+        for (int y = y0; y <= y1; y++) {
+            canvas_draw_pixel(canvas,(int)x,y,color);
+            x = x + a;
+        }
+    }    
+#endif
 
 
 }
@@ -681,6 +723,12 @@ void canvas_draw_traingle(sftr_Canvas canvas,int x1,int y1,int x2,int y2,int x3,
         canvas_draw_line(canvas,x13,y,x32,y,color);
     }
 }
+void canvas_draw_traingle_lined(sftr_Canvas canvas,int x1,int y1,int x2,int y2,int x3,int y3,sftr_Int32 color) {
+    // used to test line drawing
+    canvas_draw_line(canvas,x1,y1,x2,y2,color);
+    canvas_draw_line(canvas,x1,y1,x3,y3,color);
+    canvas_draw_line(canvas,x2,y2,x3,y3,color);
+}
 void canvas_draw_bary_traingle(sftr_Canvas canvas,sftr_Vertex a,sftr_Vertex b,sftr_Vertex c) {
     int min_x = a.pos.x;
     if(min_x > b.pos.x) min_x = b.pos.x;
@@ -718,5 +766,7 @@ void canvas_draw_bary_traingle(sftr_Canvas canvas,sftr_Vertex a,sftr_Vertex b,sf
     }
 
 }
+
+
 
 #endif

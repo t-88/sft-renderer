@@ -9,6 +9,7 @@ typedef struct RayLibBackend {
     sftr_Canvas* canvas;
     void (*render)();
     float dt;
+    float t;
 } RayLibBackend;
 
 void raylib_backend_run(RayLibBackend* backend) {
@@ -34,10 +35,13 @@ void raylib_backend_run(RayLibBackend* backend) {
     Texture2D texture;
     Color *pixels = (Color *)calloc(w*h, sizeof(Color));
 
+    backend->t = 0;
+
 
     while (!WindowShouldClose()) {
 
         backend->dt =  GetFrameTime();
+        backend->t +=   backend->dt;
         backend->render();
 
         for (int y = 0; y < h ; y++) {

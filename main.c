@@ -8,37 +8,58 @@
 #include "sft_renderer.h"
 
 
-#define lerp(type)  double lerp_##type(type a, type b,type c) {return a + (b - a) * c;} 
-lerp(int);
-lerp(double);
-lerp(float);
-
-typedef struct sftr_Vector2 {
-    double x , y;
-} sftr_Vector2;
-
-
 sftr_Canvas canvas;
 RayLibBackend raylib_backend;
 
 
-double t;
-sftr_Vector4 points[4];
-void render();
 
-
-#define GRID_SIZE 1
 static const size_t width =  400;
 static const size_t height =  400;
 
+void render();
+
+// void draw_line(sftr_Canvas canvas, int x0 , int y0, int x1 , int y1,sftr_Int32 color) {
+//     // lines are leave pixels not filled bc i focus on one axis
+//     // we can find multiple values of y for one x 
+//     // and same for y
+//     // we have to calculate dx and dy and take the smallest one and draw accordingly
+
+//     int dx = x0 - x1;
+//     int dy = y0 - y1;
+//     float a = (float) dy / dx;
+
+//     if(dx > dy) {
+//         if (x0 > x1) {
+//             sftr_SWAP(int,x0,x1);
+//             sftr_SWAP(int,y0,y1);
+//         }
+
+//         float y = y0;
+//         for (int x = x0; x <= x1; x++) {
+//             canvas_draw_pixel(canvas,x,y,color);
+//             y = y + a;
+//         }
+//     } else {
+//         if (y0 > y1) {
+//             sftr_SWAP(int,x0,x1);
+//             sftr_SWAP(int,y0,y1);
+//         }
+
+//         float x = x0;
+//         for (int y = y0; y <= y1; y++) {
+//             canvas_draw_pixel(canvas,x,y,color);
+//             x = x + a;
+//         }
+
+//     }
+
+// }
 
 int main(void) {
     canvas = canvas_new(width ,height);
-    t = 0;
     srand(time(NULL));
 
 
-    render();
     raylib_backend.canvas = &canvas;
     raylib_backend.render = render;
     raylib_backend_run(&raylib_backend);
@@ -49,9 +70,7 @@ int main(void) {
 
 
 void render() {
-
     canvas_clear(canvas,0x0000000);
-    t += raylib_backend.dt;
 
 
 }

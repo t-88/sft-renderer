@@ -35,8 +35,8 @@ int main(void) {
     sftr_vector_fill(points[1],0.5 ,0,0,1);
     sftr_vector_fill(points[2],-0.5,0,0,1);
 
-    sftr_matrix_rotate_y(rotated_y,0.1);
-    sftr_matrix_rotate_x(rotated_x,0.01);
+    sftr_matrix_rotate_y(rotated_y,0);
+    sftr_matrix_rotate_x(rotated_x,0);
     sftr_matrix_rotate_z(rotated_z,0.01);
     sftr_matrix_scale((sftr_Vector4){1,1,1,1},scaled);
     sftr_matrix_translate((sftr_Vector4){0,0,0,1},translated);
@@ -73,8 +73,13 @@ void render() {
         ps[i] = sftr_matrix_mult_vector(screen_space,points[i]);
     }
 
-    canvas_draw_traingle(canvas,ps[0].x,ps[0].y,
+    // canvas_draw_traingle(canvas,ps[0].x,ps[0].y,
+                                // ps[1].x,ps[1].y,
+                                // ps[2].x,ps[2].y,
+                                // 0xFF0000);
+    canvas_draw_traingle_lined(canvas,ps[0].x,ps[0].y,
                                 ps[1].x,ps[1].y,
                                 ps[2].x,ps[2].y,
-                                0xFF0000);
+                                0xFFFFFF);
+
 }

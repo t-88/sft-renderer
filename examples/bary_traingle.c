@@ -1,6 +1,7 @@
-#include "sft_renderer.h"
 #include "raylib_backend.h"
 
+#define SFTR_RENDERER_IMPL
+#include "sft_renderer.h"
 
 sftr_Canvas canvas;
 RayLibBackend raylib_backend;

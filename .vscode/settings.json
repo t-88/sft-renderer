@@ -14,6 +14,7 @@
         "type_traits": "c",
         "utility": "c",
         "math.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "random": "c"
     }
 }

@@ -1,7 +1,10 @@
 
-#include "sft_renderer.h"
-#include "raylib_backend.h"
 #include <time.h>
+
+#include "raylib_backend.h"
+
+#define SFTR_RENDERER_IMPL
+#include "sft_renderer.h"
 
 
 typedef struct Star {

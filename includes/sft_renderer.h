@@ -9,20 +9,7 @@
 #define SFT_RENDERER_H
 
 
-typedef double sftr_Matrix[4][4];
-
-
-typedef struct sftr_Vector4 {
-    double x , y, z ,w;
-} sftr_Vector4;
-
-
-typedef struct sftr_Vertex {
-    sftr_Vector4 pos;
-    sftr_Vector4 color;
-} sftr_Vertex;
-
-
+// meth macros
 #define sftr_matrix_det_3x3(a00,a01,a02,a10,a11,a12,a20,a21,a22) (double)((a00*a11*a22+a01*a12*a20+a02*a10*a21) - \
                                                                  (a02*a11*a20+a00*a12*a21+a01*a10*a22))
 #define sftr_matrix_det_2x2(a00,a01,a10,a11) (double)(a00*a11 - a01 * a11)
@@ -42,22 +29,8 @@ typedef struct sftr_Vertex {
 #define sftr_vector_from_arr(arr) (sftr_Vector4) {arr[0],arr[1],arr[2],arr[3]}
 
 
-
-
-
-#define HexToColor(color) (sftr_Color) { \
-                            .r = ((color) >> 8 * 3) & 0xFF, \
-                            .g = ((color) >> 8 * 2) & 0xFF, \
-                            .b = ((color) >> 8 * 1) & 0xFF, \
-                            .a = ((color) >> 8 * 0) & 0xFF  \
-                         }
-
-// #define canvas_draw_pixel(canvas,x,y,c) canvas.pixels[(x) + (y) * canvas.w].color = canvas_hex_to_color((c)) 
-#define sftr_SWAP(type,a,b) { type t = a; a = b; b = t;  } 
-const double sftr_PI = 3.14159265358979311599796346854;
 #define sftr_to_radians(angle) angle * sftr_PI / 180
-
-
+#define sftr_PI  ((double) 3.14159265358979311599796346854)
 #define  sftr_min(type) \
     type sftr_min_##type(type a,type b) {\
         if(a > b) {\
@@ -70,17 +43,39 @@ sftr_min(double);
 sftr_min(float);
 
 
+// graphics macros
+#define HexToColor(color) (sftr_Color) { \
+                            .r = ((color) >> 8 * 3) & 0xFF, \
+                            .g = ((color) >> 8 * 2) & 0xFF, \
+                            .b = ((color) >> 8 * 1) & 0xFF, \
+                            .a = ((color) >> 8 * 0) & 0xFF  \
+                         }
+
+
+// general macros
+#define sftr_SWAP(type,a,b) { type t = a; a = b; b = t;  } 
+
 
 
 typedef  unsigned int sftr_Int32;
+
+typedef double sftr_Matrix[4][4];
+
+typedef struct sftr_Vector4 {
+    double x , y, z ,w;
+} sftr_Vector4;
+
+
+typedef struct sftr_Vertex {
+    sftr_Vector4 pos;
+    sftr_Vector4 color;
+} sftr_Vertex;
+
 
 typedef struct sftr_String {
     char* val;
     size_t count;
 } sftr_String;
-
-
-
 
 typedef struct sftr_Color {
     unsigned char r , g , b , a;
@@ -98,27 +93,87 @@ typedef struct sftr_Canvas {
 
 
 
-
+// meth: header
 void sftr_matrix_print(sftr_Matrix m);
 void sftr_matrix_ident(sftr_Matrix m);
 void sftr_matrix_zero(sftr_Matrix m);
-void sftr_matrix_mult_matrix(sftr_Matrix m1,sftr_Matrix m2,sftr_Matrix m3); 
-void sftr_matrix_translate(sftr_Vector4 v,sftr_Matrix m);
-void sftr_matrix_rotate_z(sftr_Matrix m,double angle);
-void sftr_matrix_rotate_x(sftr_Matrix m,double angle);
-void sftr_matrix_rotate_y(sftr_Matrix m,double angle);
-sftr_Vector4 sftr_matrix_mult_vector(sftr_Matrix m1,sftr_Vector4 v1); 
 void sftr_matrix_transpose(sftr_Matrix in, sftr_Matrix out);
 void sftr_matrix_cofactor(sftr_Matrix in, sftr_Matrix out);
 void sftr_matrix_adjugate(sftr_Matrix in, sftr_Matrix out);
 double sftr_matrix_det(sftr_Matrix in);
-void sftr_matrix_mult_number(sftr_Matrix out,double val);
 void  sftr_matrix_inverse(sftr_Matrix in, sftr_Matrix out);
+void sftr_matrix_copy(sftr_Matrix in, sftr_Matrix out);
+void sftr_matrix_invert_gauss(sftr_Matrix in,sftr_Matrix out);
+
+void sftr_matrix_mult_matrix(sftr_Matrix m1,sftr_Matrix m2,sftr_Matrix m3); 
+sftr_Vector4 sftr_matrix_mult_vector(sftr_Matrix m_in,sftr_Vector4 v_in); 
+void sftr_matrix_mult_number(sftr_Matrix out,double val);
+
+void sftr_matrix_rowop_swap(sftr_Matrix in,int src,int dest);
+void sftr_matrix_rowop_mult(sftr_Matrix in,int row,double val); 
+void sftr_matrix_rowop_add(sftr_Matrix in,int src,int dest); 
+void sftr_matrix_rowop_mult_add(sftr_Matrix in,int src,double val ,int dest); 
+
 void sftr_matrix_scale(sftr_Vector4 v,sftr_Matrix m);
 void sftr_matrix_screen_space(sftr_Matrix out,int w, int h);
-void sftr_matrix_screen_space(sftr_Matrix out,int w, int h);
+void sftr_matrix_translate(sftr_Vector4 v,sftr_Matrix m);
+void sftr_matrix_rotate_z(sftr_Matrix m,double angle);
+void sftr_matrix_rotate_x(sftr_Matrix m,double angle);
+void sftr_matrix_rotate_y(sftr_Matrix m,double angle);
+ 
+
+//graphics header
+int canvas_to_ppm(sftr_Canvas canvas,const char* file_name);
+
+sftr_String string_from_int(int val);
+void string_destroy(sftr_String* str);
+
+sftr_Canvas canvas_new(int w, int h);
+void canvas_destroy(sftr_Canvas canvas);
+sftr_Color canvas_hex_to_color(sftr_Int32 color);
 
 
+void canvas_clear(sftr_Canvas canvas,sftr_Int32 color);
+void canvas_draw_pixel(sftr_Canvas canvas,int x,int y,sftr_Int32 c);
+void canvas_draw_line(sftr_Canvas canvas,int x1,int y1, int x2,int y2,sftr_Int32 c);
+void canvas_draw_rect(sftr_Canvas canvas, int x, int y, int w , int h, sftr_Int32 color);
+void canvas_draw_circle(sftr_Canvas canvas,int x,int y,int r , sftr_Int32 color);
+void canvas_draw_traingle(sftr_Canvas canvas,int x1,int y1,int x2,int y2,int x3,int y3,sftr_Int32 color);
+void canvas_draw_bary_traingle(sftr_Canvas canvas,sftr_Vertex a,sftr_Vertex b,sftr_Vertex c);
+
+void sftr_barycentric_inter(sftr_Vector4 a,sftr_Vector4 b,sftr_Vector4 c,sftr_Vector4 p,double* w1,double* w2,double* w3);
+
+#endif
+
+
+
+#ifdef SFTR_RENDERER_IMPL
+
+// matrix row ops
+void sftr_matrix_rowop_swap(sftr_Matrix in,int src,int dest) {
+    for (size_t i = 0; i < 4; i++) {
+        sftr_SWAP(double,in[src][i],in[dest][i]);
+    }
+}
+void sftr_matrix_rowop_mult(sftr_Matrix in,int row,double val) { 
+    for (size_t i = 0; i < 4; i++) {
+        in[row][i] *= val;
+    }
+}
+void sftr_matrix_rowop_add(sftr_Matrix in,int src,int dest) { 
+    for (size_t i = 0; i < 4; i++) {
+        in[dest][i] += in[src][i];
+    }
+}
+void sftr_matrix_rowop_mult_add(sftr_Matrix in,int src,double val ,int dest) { 
+    for (int i = 0; i < 4; i++) {
+        in[dest][i] += in[src][i] * val;
+    }
+}
+
+
+// meth implmetation
+// matrix helpers
 void sftr_matrix_print(sftr_Matrix m) {
     for (size_t j = 0; j < 4; j++) {
         for (size_t i = 0; i < 4; i++)
@@ -137,68 +192,6 @@ void sftr_matrix_zero(sftr_Matrix m) {
         for (size_t i = 0; i < 4; i++) 
             m[j][i] = 0;
 }
-void sftr_matrix_mult_matrix(sftr_Matrix m1,sftr_Matrix m2,sftr_Matrix m3) { 
-    sftr_matrix_zero(m3);
-    for (size_t j = 0; j < 4; j++)
-        for (size_t i = 0; i < 4; i++) 
-            for (size_t k = 0; k < 4; k++)
-                m3[j][i] += m1[j][k] * m2[k][i]; 
-}
-void sftr_matrix_translate(sftr_Vector4 v,sftr_Matrix m) {
-    sftr_matrix_fill(
-        m,
-        1 , 0 , 0 , v.x,
-        0 , 1 , 0 , v.y,
-        0 , 0 , 1 , v.z,
-        0 , 0 , 0 , 1
-    );
-}
-void sftr_matrix_rotate_z(sftr_Matrix m,double angle) {
-    double c = cos(angle);
-    double s = sin(angle);
-    sftr_matrix_fill(
-        m,
-        c , -s , 0 , 0,
-        s , c  , 0 , 0,
-        0 , 0  , 1 , 0,
-        0 , 0  , 0 , 1
-    );
-}
-void sftr_matrix_rotate_x(sftr_Matrix m,double angle) {
-    double c = cos(angle);
-    double s = sin(angle);
-    sftr_matrix_fill(
-        m,
-        1 , 0 , 0, 0,
-        0 , c , -s, 0,
-        0 , s , c, 0,
-        0 , 0  , 0 , 1
-    );
-}
-void sftr_matrix_rotate_y(sftr_Matrix m,double angle) {
-    double c = cos(angle);
-    double s = sin(angle);
-    sftr_matrix_fill(
-        m,
-        c , 0 , s , 0,
-        0 ,  1 , 0 , 0,
-        -s , 0  , c , 0,
-        0 , 0  , 0 , 1
-    );
-}
-sftr_Vector4 sftr_matrix_mult_vector(sftr_Matrix m_in,sftr_Vector4 v_in) { 
-    double arr_v[] = {0,0,0,0};
-    double arr_v1[] = sftr_vector_to_arr(v_in);
-
-    for (size_t j = 0; j < 4; j++)
-        for (size_t k = 0; k < 4; k++)
-            arr_v[j] += m_in[j][k] * arr_v1[k];
-
-    sftr_Vector4 v2; 
-    v2 = sftr_vector_from_arr(arr_v);
-    return v2;
-}
-
 void sftr_matrix_transpose(sftr_Matrix in, sftr_Matrix out) {
     sftr_matrix_fill(
         out,
@@ -237,8 +230,6 @@ void sftr_matrix_adjugate(sftr_Matrix in, sftr_Matrix out) {
     sftr_matrix_cofactor(in,tmp);
     sftr_matrix_transpose(tmp,out);
 }
-
-
 double sftr_matrix_det(sftr_Matrix in) {
     double det;
     det = in[0][0] * sftr_matrix_det_3x3(
@@ -264,21 +255,12 @@ double sftr_matrix_det(sftr_Matrix in) {
 
     return det;
 }
-void sftr_matrix_mult_number(sftr_Matrix out,double val) {
-    for (size_t j = 0; j < 4; j++) 
-        for (size_t i = 0; i < 4; i++) 
-            out[j][i] *= val;
-}
 void  sftr_matrix_inverse(sftr_Matrix in, sftr_Matrix out) {
     sftr_matrix_adjugate(in,out);
     double det = sftr_matrix_det(in);
     assert(det != 0 && "[Math Error] Cant inverse matrix, det = 0");
     sftr_matrix_mult_number(out,1/det);
 }
- 
-
-
-
 void sftr_matrix_copy(sftr_Matrix in, sftr_Matrix out) {
     for (size_t j = 0; j < 4; j++) {
         for (size_t i = 0; i < 4; i++) {
@@ -286,32 +268,6 @@ void sftr_matrix_copy(sftr_Matrix in, sftr_Matrix out) {
         }
     }
 }
-
-static void sftr_matrix_rowop_swap(sftr_Matrix in,int src,int dest) {
-    for (size_t i = 0; i < 4; i++) {
-        sftr_SWAP(double,in[src][i],in[dest][i]);
-    }
-}
-static void sftr_matrix_rowop_mult(sftr_Matrix in,int row,double val) { 
-    for (size_t i = 0; i < 4; i++) {
-        in[row][i] *= val;
-    }
-}
-static void sftr_matrix_rowop_add(sftr_Matrix in,int src,int dest) { 
-    for (size_t i = 0; i < 4; i++) {
-        in[dest][i] += in[src][i];
-    }
-}
-static void sftr_matrix_rowop_mult_add(sftr_Matrix in,int src,double val ,int dest) { 
-    for (int i = 0; i < 4; i++) {
-        in[dest][i] += in[src][i] * val;
-    }
-}
-
-
-
-
-
 void sftr_matrix_invert_gauss(sftr_Matrix in,sftr_Matrix out) {
     sftr_matrix_ident(out);
     sftr_Matrix cp;
@@ -385,6 +341,37 @@ void sftr_matrix_invert_gauss(sftr_Matrix in,sftr_Matrix out) {
     }
 }
 
+
+
+// matrix  mult
+void sftr_matrix_mult_matrix(sftr_Matrix m1,sftr_Matrix m2,sftr_Matrix m3) { 
+    sftr_matrix_zero(m3);
+    for (size_t j = 0; j < 4; j++)
+        for (size_t i = 0; i < 4; i++) 
+            for (size_t k = 0; k < 4; k++)
+                m3[j][i] += m1[j][k] * m2[k][i]; 
+}
+sftr_Vector4 sftr_matrix_mult_vector(sftr_Matrix m_in,sftr_Vector4 v_in) { 
+    double arr_v[] = {0,0,0,0};
+    double arr_v1[] = sftr_vector_to_arr(v_in);
+
+    for (size_t j = 0; j < 4; j++)
+        for (size_t k = 0; k < 4; k++)
+            arr_v[j] += m_in[j][k] * arr_v1[k];
+
+    sftr_Vector4 v2; 
+    v2 = sftr_vector_from_arr(arr_v);
+    return v2;
+}
+void sftr_matrix_mult_number(sftr_Matrix out,double val) {
+    for (size_t j = 0; j < 4; j++) 
+        for (size_t i = 0; i < 4; i++) 
+            out[j][i] *= val;
+}
+
+
+
+// matrix tranformation
 void sftr_matrix_scale(sftr_Vector4 v,sftr_Matrix m) {
     sftr_matrix_fill(
         m,
@@ -394,9 +381,6 @@ void sftr_matrix_scale(sftr_Vector4 v,sftr_Matrix m) {
         0 , 0 , 0 , 1
     );
 }
-
-
-
 void sftr_matrix_screen_space(sftr_Matrix out,int w, int h) {
     float w_2 = w/2; 
     float h_2 = h/2; 
@@ -408,7 +392,66 @@ void sftr_matrix_screen_space(sftr_Matrix out,int w, int h) {
         0 , 0 , 0 , 1
     );
 }
+void sftr_matrix_translate(sftr_Vector4 v,sftr_Matrix m) {
+    sftr_matrix_fill(
+        m,
+        1 , 0 , 0 , v.x,
+        0 , 1 , 0 , v.y,
+        0 , 0 , 1 , v.z,
+        0 , 0 , 0 , 1
+    );
+}
+void sftr_matrix_rotate_z(sftr_Matrix m,double angle) {
+    double c = cos(angle);
+    double s = sin(angle);
+    sftr_matrix_fill(
+        m,
+        c , -s , 0 , 0,
+        s , c  , 0 , 0,
+        0 , 0  , 1 , 0,
+        0 , 0  , 0 , 1
+    );
+}
+void sftr_matrix_rotate_x(sftr_Matrix m,double angle) {
+    double c = cos(angle);
+    double s = sin(angle);
+    sftr_matrix_fill(
+        m,
+        1 , 0 , 0, 0,
+        0 , c , -s, 0,
+        0 , s , c, 0,
+        0 , 0  , 0 , 1
+    );
+}
+void sftr_matrix_rotate_y(sftr_Matrix m,double angle) {
+    double c = cos(angle);
+    double s = sin(angle);
+    sftr_matrix_fill(
+        m,
+        c , 0 , s , 0,
+        0 ,  1 , 0 , 0,
+        -s , 0  , c , 0,
+        0 , 0  , 0 , 1
+    );
+}
 
+
+// meth 
+void sftr_barycentric_inter(sftr_Vector4 a,sftr_Vector4 b,sftr_Vector4 c,sftr_Vector4 p,double* w1,double* w2,double* w3) {
+    /* 
+        FROM: https://www.youtube.com/watch?v=HYAgJN3x4GA&ab_channel=SebastianLague
+        Thx SebastianLague :)
+    */
+    double k = b.x-a.x;
+    *w1 = ((p.y - a.y)  * k - (p.x - a.x) * (b.y - a.y)) / ((a.x - c.x) * (b.y - a.y) + (c.y - a.y) * k);
+    *w2 = ((p.x - a.x) - *w1 * (c.x - a.x)) / k;  
+    *w3 =   1 - *w1 - *w2;
+}
+
+
+
+
+// strings
 sftr_String string_from_int(int val) {
     // generate a string from integer, need to clean mem ur self
 
@@ -434,6 +477,7 @@ void string_destroy(sftr_String* str) {
     free(str->val);
 }
 
+// graphics
 sftr_Canvas canvas_new(int w, int h) {
     sftr_Canvas canvas = {.w = w, .h = h};
     canvas.pixels = (Pixel*) malloc(sizeof(Pixel) * w * h);
@@ -448,7 +492,6 @@ sftr_Canvas canvas_new(int w, int h) {
 void canvas_destroy(sftr_Canvas canvas) {
     free(canvas.pixels);
 }
-
 sftr_Color canvas_hex_to_color(sftr_Int32 color) {
     if(color <= 0xFFFFFF) {
         color <<= 8;
@@ -456,15 +499,10 @@ sftr_Color canvas_hex_to_color(sftr_Int32 color) {
     } 
     return HexToColor(color);
 }
-void canvas_clear(sftr_Canvas canvas,sftr_Int32 color) {
-    sftr_Color c = canvas_hex_to_color(color); 
-    for (size_t y = 0; y < canvas.h; y++)
-        for (size_t x = 0; x < canvas.w; x++) {
-            canvas.pixels[x + y * canvas.w].color = c;
-        }
-}
 
+// saving
 int canvas_to_ppm(sftr_Canvas canvas,const char* file_name) {
+    // writes the canvas to ppm
     sftr_String str_w;
     sftr_String str_h;
 
@@ -509,16 +547,24 @@ int canvas_to_ppm(sftr_Canvas canvas,const char* file_name) {
     fclose(f);  
 }
 
+
+//graphics draw ops
+void canvas_clear(sftr_Canvas canvas,sftr_Int32 color) {
+    sftr_Color c = canvas_hex_to_color(color); 
+    for (size_t y = 0; y < canvas.h; y++)
+        for (size_t x = 0; x < canvas.w; x++) {
+            canvas.pixels[x + y * canvas.w].color = c;
+        }
+}
 void canvas_draw_pixel(sftr_Canvas canvas,int x,int y,sftr_Int32 c) {
     if(0 <= x  && x < canvas.w &&  0 <= y && y < canvas.h) {
         canvas.pixels[x + y * canvas.w].color = canvas_hex_to_color(c);
     }
 } 
-
-
-//TODO: Understand this shit plz
-// https://saturncloud.io/blog/bresenham-line-algorithm-a-powerful-tool-for-efficient-line-drawing/
 void canvas_draw_line(sftr_Canvas canvas,int x1,int y1, int x2,int y2,sftr_Int32 c) {
+    //TODO: Understand this shit plz
+    // https://saturncloud.io/blog/bresenham-line-algorithm-a-powerful-tool-for-efficient-line-drawing/
+
     // bresenham algorithm
     int dx = abs(x2 - x1);
     int dy = abs(y2 - y1);
@@ -557,8 +603,6 @@ void canvas_draw_line(sftr_Canvas canvas,int x1,int y1, int x2,int y2,sftr_Int32
 
 
 }
-
-
 void canvas_draw_rect(sftr_Canvas canvas, int x, int y, int w , int h, sftr_Int32 color) {
     assert(w >= 0 && "[Error] in canvas_draw_rect: rect width cant be negative");
     assert(h >= 0 && "[Error] in canvas_draw_rect: rect height cant be negative");
@@ -582,10 +626,6 @@ void canvas_draw_rect(sftr_Canvas canvas, int x, int y, int w , int h, sftr_Int3
     
 
 }
-
-
-
-
 void canvas_draw_circle(sftr_Canvas canvas,int x,int y,int r , sftr_Int32 color) {
     if(r <= 0) {
         assert(0 && "[Error] canvas_draw_circle: cant have zero or nigative radius");
@@ -600,9 +640,8 @@ void canvas_draw_circle(sftr_Canvas canvas,int x,int y,int r , sftr_Int32 color)
     }
     
 }
-
-// TODO: make better
 void canvas_draw_traingle(sftr_Canvas canvas,int x1,int y1,int x2,int y2,int x3,int y3,sftr_Int32 color) {
+    // TODO: make better
     // top y
     if(y1 > y2) {sftr_SWAP(int,y2,y1);sftr_SWAP(int,x2,x1);}
     if(y1 > y3) {sftr_SWAP(int,y1,y3);sftr_SWAP(int,x1,x3);}
@@ -642,21 +681,6 @@ void canvas_draw_traingle(sftr_Canvas canvas,int x1,int y1,int x2,int y2,int x3,
         canvas_draw_line(canvas,x13,y,x32,y,color);
     }
 }
-
-
-void sftr_barycentric_inter(sftr_Vector4 a,sftr_Vector4 b,sftr_Vector4 c,sftr_Vector4 p,double* w1,double* w2,double* w3) {
-    /* 
-        FROM: https://www.youtube.com/watch?v=HYAgJN3x4GA&ab_channel=SebastianLague
-        Thx SebastianLague :)
-    */
-    double k = b.x-a.x;
-    *w1 = ((p.y - a.y)  * k - (p.x - a.x) * (b.y - a.y)) / ((a.x - c.x) * (b.y - a.y) + (c.y - a.y) * k);
-    *w2 = ((p.x - a.x) - *w1 * (c.x - a.x)) / k;  
-    *w3 =   1 - *w1 - *w2;
-}
-
-
-
 void canvas_draw_bary_traingle(sftr_Canvas canvas,sftr_Vertex a,sftr_Vertex b,sftr_Vertex c) {
     int min_x = a.pos.x;
     if(min_x > b.pos.x) min_x = b.pos.x;

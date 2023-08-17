@@ -1,9 +1,11 @@
-#include "sft_renderer.h"
-#include "sft_math.h"
-#include "raylib_backend.h"
-
 #include <stdbool.h>
 #include <assert.h>
+
+#include "raylib_backend.h"
+
+#define SFTR_RENDERER_IMPL
+#include "sft_renderer.h"
+
 
 
 sftr_Canvas canvas;

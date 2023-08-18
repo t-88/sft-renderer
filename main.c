@@ -70,8 +70,12 @@ sftr_Canvas texture;
 unsigned char* img;
 int w , h ,comp;
 
-sftr_Vector4 points[4];
+sftr_Vector4 points[3];
+sftr_Vector4 points1[3];
+
+
 sftr_Matrix screen_space;
+sftr_Matrix rotate;
 
 
 
@@ -92,11 +96,17 @@ int main(void) {
 
 
     // TODO: bug in bary coords gives nan
-    sftr_vector_fill(points[0],-0.5   ,0.5,0,1);
-    sftr_vector_fill(points[1],-0.5 ,-0.5,0,1);
-    sftr_vector_fill(points[2],0.5,-0.5,0,1);
+    sftr_vector_fill(points[0],-1/2.f   ,1/2.f,0,1);
+    sftr_vector_fill(points[1],-1/2.f ,-1 /2.f,0,1);
+    sftr_vector_fill(points[2],1/2.f,-1/2.f,0,1);
     
+    sftr_vector_fill(points1[0],-1/2.f   ,1/2.f,0,1);
+    sftr_vector_fill(points1[1],1 /2.f,1   /2.f,0,1);
+    sftr_vector_fill(points1[2],1 /2.f,-1  /2.f,0,1);
+ 
+
     sftr_matrix_screen_space(screen_space,400,400);
+    sftr_matrix_rotate_x(rotate,0);
 
 
 
@@ -116,27 +126,34 @@ void render()  {
 
 
     
-    sftr_Vertex ps[3];
-    ps[0].color = (sftr_Vector4){255,0,0,0};
-    ps[1].color = (sftr_Vector4){0,255,0,0};
-    ps[2].color = (sftr_Vector4){0,0,255,0};
-    for (size_t i = 0; i < 3; i++) {
-        ps[i].pos = sftr_matrix_mult_vector(screen_space,points[i]) ;
+    sftr_Vertex ps[6];
+
+    sftr_matrix_rotate_x(rotate,sin(raylib_backend.t / 10) * 2 * sftr_PI);
+    for (size_t i = 0; i < 6; i++) {
+        ps[i].pos = sftr_matrix_mult_vector(rotate,points[i]);
+        ps[i].pos = sftr_matrix_mult_vector(screen_space,ps[i].pos) ;
     }
 
     // canvas_draw_bary_traingle(canvas,ps[0],
                                     //  ps[1],
                                     //  ps[2]);
 
-    sftr_TexVertex p[3];
+    sftr_TexVertex p[6];
     p[0] = (sftr_TexVertex) {ps[0].pos,  (sftr_Vector4){.x =  0 , . y = 0}};
     p[1] = (sftr_TexVertex) {ps[1].pos,  (sftr_Vector4){.x =  0 , . y = 1}};
     p[2] = (sftr_TexVertex) {ps[2].pos,  (sftr_Vector4){.x =  1 , . y = 1}};
-    canvas_draw_traingle_textured(canvas,p[0],p[1],p[2],texture);
 
-    canvas_draw_traingle_lined(canvas,ps[0].pos.x,ps[0].pos.y,
-                                      ps[1].pos.x,ps[1].pos.y,
-                                      ps[2].pos.x,ps[2].pos.y,
-                                      0xFF0000
-                             );
+    p[3] = (sftr_TexVertex) {ps[3].pos,  (sftr_Vector4){.x =  0 , . y = 0}};
+    p[4] = (sftr_TexVertex) {ps[4].pos,  (sftr_Vector4){.x =  1 , . y = 0}};
+    p[5] = (sftr_TexVertex) {ps[5].pos,  (sftr_Vector4){.x =  1 , . y = 1}};
+
+
+    canvas_draw_traingle_textured(canvas,p[0],p[1],p[2],texture);
+    canvas_draw_traingle_textured(canvas,p[3],p[4],p[5],texture);
+
+    // canvas_draw_traingle_lined(canvas,ps[0].pos.x,ps[0].pos.y,
+                                    //   ps[1].pos.x,ps[1].pos.y,
+                                    //   ps[2].pos.x,ps[2].pos.y,
+                                    //   0xFF00FF
+                            //  );
 }

@@ -461,11 +461,12 @@ void sftr_barycentric_inter(sftr_Vector4 a,sftr_Vector4 b,sftr_Vector4 c,sftr_Ve
         FROM: https://www.youtube.com/watch?v=HYAgJN3x4GA&ab_channel=SebastianLague
         Thx SebastianLague :)
     */
-    double k = b.x-a.x;
-    double det = (b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y);
-    *w1 = ((b.y - c.y) * (p.x - c.x) + (c.x - b.x) * (p.y - c.y)) / det; 
-    *w2 = ((b.y - a.y) * (p.x - c.x) + (a.x - c.y) * (p.y - c.y)) / det;  
-    *w3 =   1 - *w1 - *w2;
+
+    double det = (double) 1.f / (((b.x - a.x)*(c.y - a.y)) - (b.y - a.y) * (c.x - a.x));
+    *w2 = (double) (((c.y - a.y) * (p.x - a.x)) + ((a.x - c.x ) * (p.y - a.y)))  * det;
+    *w3 = (double) (((a.y - b.y) * (p.x - a.x)) + ((b.x - a.x) *  (p.y - a.y)))  * det;
+
+    *w1 =   (double) 1 - *w2 - *w3;
 }
 
 
@@ -758,6 +759,8 @@ void canvas_draw_bary_traingle(sftr_Canvas canvas,sftr_Vertex a,sftr_Vertex b,sf
     if(max_y < b.pos.y) max_y = b.pos.y;
     if(max_y < c.pos.y) max_y = c.pos.y;
 
+    // canvas_draw_rect(canvas,min_x,min_y,max_x - min_x,max_y - min_y,0xFF0000);
+
     for (int y = min_y; y <= max_y; y++) {
         for (int x = min_x; x <= max_x; x++) {
             double w1,w2,w3;
@@ -774,7 +777,7 @@ void canvas_draw_bary_traingle(sftr_Canvas canvas,sftr_Vertex a,sftr_Vertex b,sf
                 sftr_Int32 color = r << 16 | g << 8 | b << 0; 
 
                 canvas_draw_pixel(canvas,p.x,p.y,color);
-            }
+            } 
         }
     }
 

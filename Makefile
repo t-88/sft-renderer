@@ -30,4 +30,8 @@ texture_mapping:
 	./examples/$@
 	rm examples/$@
 
-  
+perspective_correction:
+	cc examples/$@.c -o examples/$@ $(INCLUDES)
+	./examples/$@
+	rm examples/$@
+

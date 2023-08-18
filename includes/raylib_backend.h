@@ -15,7 +15,12 @@ typedef struct RayLibBackend {
 void raylib_backend_run(RayLibBackend* backend) {
     if(backend->canvas == NULL) {
         printf("[ERROR] backend->canvas == NULL\n");
-        exit(0);
+        return;
+    }
+
+    if(backend->canvas->w == 0 || backend->canvas->h == 0) {
+        printf("[ERROR] width or height of canvas == 0\n");
+        return;
     }
 
     int w = backend->canvas->w,

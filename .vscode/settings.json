@@ -15,6 +15,7 @@
         "utility": "c",
         "math.h": "c",
         "stdio.h": "c",
-        "random": "c"
+        "random": "c",
+        "stb_image.h": "c"
     }
 }

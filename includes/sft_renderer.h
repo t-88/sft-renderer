@@ -65,10 +65,18 @@ typedef struct sftr_Vector2 {
     double x , y;
 } sftr_Vector2;
 
+
+// should merge those togther maybe
+// for filling traingle with colors
 typedef struct sftr_Vertex {
     sftr_Vector4 pos;
     sftr_Vector4 color;
 } sftr_Vertex;
+// for texture mapping 
+typedef struct sftr_TexVertex {
+    sftr_Vector4 pos;
+    sftr_Vector4 coord;
+} sftr_TexVertex ;
 
 
 typedef struct sftr_String {
@@ -78,7 +86,6 @@ typedef struct sftr_String {
 
 typedef struct sftr_Color {
     unsigned char r , g , b , a;
-
 } sftr_Color;
 typedef struct Pixel {
     sftr_Color color;
@@ -140,6 +147,10 @@ void canvas_draw_circle(sftr_Canvas canvas,int x,int y,int r , sftr_Int32 color)
 void canvas_draw_traingle(sftr_Canvas canvas,int x1,int y1,int x2,int y2,int x3,int y3,sftr_Int32 color);
 void canvas_draw_traingle_lined(sftr_Canvas canvas,int x1,int y1,int x2,int y2,int x3,int y3,sftr_Int32 color);
 void canvas_draw_bary_traingle(sftr_Canvas canvas,sftr_Vertex a,sftr_Vertex b,sftr_Vertex c);
+void canvas_copy_img(sftr_Canvas canvas,unsigned char* img,int comp);
+
+
+
 
 void sftr_barycentric_inter(sftr_Vector4 a,sftr_Vector4 b,sftr_Vector4 c,sftr_Vector4 p,double* w1,double* w2,double* w3);
 
@@ -451,8 +462,9 @@ void sftr_barycentric_inter(sftr_Vector4 a,sftr_Vector4 b,sftr_Vector4 c,sftr_Ve
         Thx SebastianLague :)
     */
     double k = b.x-a.x;
-    *w1 = ((p.y - a.y)  * k - (p.x - a.x) * (b.y - a.y)) / ((a.x - c.x) * (b.y - a.y) + (c.y - a.y) * k);
-    *w2 = ((p.x - a.x) - *w1 * (c.x - a.x)) / k;  
+    double det = (b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y);
+    *w1 = ((b.y - c.y) * (p.x - c.x) + (c.x - b.x) * (p.y - c.y)) / det; 
+    *w2 = ((b.y - a.y) * (p.x - c.x) + (a.x - c.y) * (p.y - c.y)) / det;  
     *w3 =   1 - *w1 - *w2;
 }
 
@@ -752,6 +764,7 @@ void canvas_draw_bary_traingle(sftr_Canvas canvas,sftr_Vertex a,sftr_Vertex b,sf
             sftr_Vector4 p = {x,y,0,1};
 
             sftr_barycentric_inter(a.pos,b.pos,c.pos,p,&w1,&w2,&w3);
+            
             if(w1 >= 0 && w2 >= 0 && w1 + w2 <= 1) {
                 int r = sftr_min_double(255,a.color.x * w1) + sftr_min_double(255,a.color.y * w1) + sftr_min_double(255,a.color.z * w1);
                 int g = sftr_min_double(255,b.color.x * w2) + sftr_min_double(255,b.color.y * w2) + sftr_min_double(255,b.color.z * w2);
@@ -766,7 +779,20 @@ void canvas_draw_bary_traingle(sftr_Canvas canvas,sftr_Vertex a,sftr_Vertex b,sf
     }
 
 }
-
+void canvas_copy_img(sftr_Canvas canvas,unsigned char* img,int comp) {
+    // only supports imgs with r, g ,b
+    // canvas should be the same size as img
+    // load image using stbi_load
+    
+    for (int y = 0; y < canvas.h; y++) {
+        for (int x = 0; x < canvas.w; x++) {
+            canvas.pixels[x + y * canvas.w].color.r = img[(x + y * canvas.w) * comp + 0];
+            canvas.pixels[x + y * canvas.w].color.g = img[(x + y * canvas.w) * comp + 1];
+            canvas.pixels[x + y * canvas.w].color.b = img[(x + y * canvas.w) * comp + 2];
+            canvas.pixels[x + y * canvas.w].color.a = 0xFF;
+        }
+    }
+}
 
 
 #endif

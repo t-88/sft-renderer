@@ -1,4 +1,4 @@
-INCLUDES = -Iincludes/ -lm -lraylib 
+INCLUDES = -Iincludes/ -lm -lraylib  -g
 
 main:
 	cc $@.c -o $@ $(INCLUDES)
@@ -19,6 +19,10 @@ bary_traingle:
 	./examples/$@
 	rm examples/$@
 
+rendering_imgs:
+	cc examples/$@.c -o examples/$@ $(INCLUDES)
+	./examples/$@
+	rm examples/$@
 
 
   

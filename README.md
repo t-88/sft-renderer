@@ -13,4 +13,7 @@ basic software renderer, smthing like olivec from tsoding.
 ![matrix meth resualt](./dev-imgs/matrix_meth.gif)    
 **Barycentric cords in action**     
 ![bary traingle](./dev-imgs/bary_traingle.gif)
+**Texture Mapping**     
+![texture mapping](./dev-imgs/texture_mapping.gif)
+
  

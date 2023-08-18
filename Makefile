@@ -25,4 +25,9 @@ rendering_imgs:
 	rm examples/$@
 
 
+texture_mapping:
+	cc examples/$@.c -o examples/$@ $(INCLUDES)
+	./examples/$@
+	rm examples/$@
+
   

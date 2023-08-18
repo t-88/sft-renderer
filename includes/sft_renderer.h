@@ -35,6 +35,7 @@
 // auto generated functions
 #define  sftr_min(type) type sftr_min_##type(type a,type b) { if(a > b) { return b; } return a;}
 #define lerp(type)  double lerp_##type(type a, type b,type c) {return a + (b - a) * c;} 
+#define sftr_Color_From_Pixel(pixle) ((pixle).color.r << 16 | (pixle).color.g << 8 | (pixle).color.b << 0)
 
 
 
@@ -148,7 +149,7 @@ void canvas_draw_traingle(sftr_Canvas canvas,int x1,int y1,int x2,int y2,int x3,
 void canvas_draw_traingle_lined(sftr_Canvas canvas,int x1,int y1,int x2,int y2,int x3,int y3,sftr_Int32 color);
 void canvas_draw_bary_traingle(sftr_Canvas canvas,sftr_Vertex a,sftr_Vertex b,sftr_Vertex c);
 void canvas_copy_img(sftr_Canvas canvas,unsigned char* img,int comp);
-
+void canvas_draw_traingle_textured(sftr_Canvas canvas,sftr_TexVertex a,sftr_TexVertex b,sftr_TexVertex c,sftr_Canvas texture);
 
 
 
@@ -795,6 +796,44 @@ void canvas_copy_img(sftr_Canvas canvas,unsigned char* img,int comp) {
             canvas.pixels[x + y * canvas.w].color.a = 0xFF;
         }
     }
+}
+
+void canvas_draw_traingle_textured(sftr_Canvas canvas,sftr_TexVertex a,sftr_TexVertex b,sftr_TexVertex c,sftr_Canvas texture) {
+    int min_x = a.pos.x;
+    if(min_x > b.pos.x) min_x = b.pos.x;
+    if(min_x > c.pos.x) min_x = c.pos.x;
+
+    int max_x = a.pos.x;
+    if(max_x < b.pos.x) max_x = b.pos.x;
+    if(max_x < c.pos.x) max_x = c.pos.x;
+
+    int min_y = a.pos.y;
+    if(min_y > b.pos.y) min_y = b.pos.y;
+    if(min_y > c.pos.y) min_y = c.pos.y;
+
+    int max_y = a.pos.y;
+    if(max_y < b.pos.y) max_y = b.pos.y;
+    if(max_y < c.pos.y) max_y = c.pos.y;
+
+    // filling the bounding box
+    for (int y = min_y; y <= max_y; y++) {
+        for (int x = min_x; x <= max_x; x++) {
+            double w1,w2,w3;
+            sftr_Vector4 p = {x,y,0,1};
+
+            sftr_barycentric_inter(a.pos,b.pos,c.pos,p,&w1,&w2,&w3);
+            if(w1 >= 0 && w2 >= 0 && w1 + w2 <= 1) {
+                int tex_x = (a.coord.x * w1 +  b.coord.x * w2 + c.coord.x * w3) * texture.w;
+                int tex_y = (a.coord.y * w1 +  b.coord.y * w2 + c.coord.y * w3) * texture.h;
+
+                Pixel pixel = texture.pixels[(int)(tex_x + tex_y * texture.w )];
+                sftr_Int32 color = sftr_Color_From_Pixel(pixel);
+
+                canvas_draw_pixel(canvas,p.x,p.y,color);
+            }
+        }
+    }
+
 }
 
 

@@ -24,6 +24,7 @@ static const size_t height =  400;
 void render();
 
 
+
 sftr_Canvas texture;
 unsigned char* img;
 int w , h ,comp;
@@ -95,9 +96,6 @@ void render()  {
         ps[i].pos = sftr_matrix_mult_vector(screen_space,ps[i].pos) ;
     }
 
-    // canvas_draw_bary_traingle(canvas,ps[0],
-                                    //  ps[1],
-                                    //  ps[2]);
 
     sftr_TexVertex p[6];
     p[0] = (sftr_TexVertex) {ps[0].pos,  (sftr_Vector4){.x =  0 , . y = 0}};
@@ -112,9 +110,4 @@ void render()  {
     canvas_draw_traingle_textured(canvas,p[0],p[1],p[2],texture);
     canvas_draw_traingle_textured(canvas,p[3],p[4],p[5],texture);
 
-    // canvas_draw_traingle_lined(canvas,ps[0].pos.x,ps[0].pos.y,
-                                    //   ps[1].pos.x,ps[1].pos.y,
-                                    //   ps[2].pos.x,ps[2].pos.y,
-                                    //   0xFF00FF
-                            //  );
 }

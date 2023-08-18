@@ -770,12 +770,12 @@ void canvas_draw_bary_traingle(sftr_Canvas canvas,sftr_Vertex a,sftr_Vertex b,sf
             sftr_barycentric_inter(a.pos,b.pos,c.pos,p,&w1,&w2,&w3);
             
             if(w1 >= 0 && w2 >= 0 && w1 + w2 <= 1) {
-                int r = sftr_min_double(255,a.color.x * w1) + sftr_min_double(255,a.color.y * w1) + sftr_min_double(255,a.color.z * w1);
-                int g = sftr_min_double(255,b.color.x * w2) + sftr_min_double(255,b.color.y * w2) + sftr_min_double(255,b.color.z * w2);
-                int b = sftr_min_double(255,c.color.x * w3) + sftr_min_double(255,c.color.y * w3) + sftr_min_double(255,c.color.z * w3);
+                int r =  sftr_min_double(255,a.color.x * w1) + sftr_min_double(255,b.color.x * w1) + sftr_min_double(255,c.color.x * w1);
+                int g =  sftr_min_double(255,a.color.y * w2) + sftr_min_double(255,b.color.y * w2) + sftr_min_double(255,c.color.y * w2);
+                int bl = sftr_min_double(255,a.color.z * w3) + sftr_min_double(255,b.color.z * w3) + sftr_min_double(255,c.color.z * w3);
 
 
-                sftr_Int32 color = r << 16 | g << 8 | b << 0; 
+                sftr_Int32 color = r << 16 | g << 8 | bl << 0; 
 
                 canvas_draw_pixel(canvas,p.x,p.y,color);
             } 

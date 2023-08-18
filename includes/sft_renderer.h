@@ -823,8 +823,15 @@ void canvas_draw_traingle_textured(sftr_Canvas canvas,sftr_TexVertex a,sftr_TexV
 
             sftr_barycentric_inter(a.pos,b.pos,c.pos,p,&w1,&w2,&w3);
             if(w1 >= 0 && w2 >= 0 && w1 + w2 <= 1) {
-                int tex_x = (a.coord.x * w1 +  b.coord.x * w2 + c.coord.x * w3) * texture.w;
-                int tex_y = (a.coord.y * w1 +  b.coord.y * w2 + c.coord.y * w3) * texture.h;
+
+
+                float one_over_z_i = 1.f/(a.pos.w * w1 +  b.pos.w * w2 + c.pos.w * w3);
+
+                int tex_x = (a.coord.x * w1 +  b.coord.x * w2 + c.coord.x  * w3) * texture.w * one_over_z_i;
+                int tex_y = (a.coord.y * w1 +  b.coord.y * w2 + c.coord.y  * w3) * texture.h * one_over_z_i;
+
+
+
 
                 Pixel pixel = texture.pixels[(int)(tex_x + tex_y * texture.w )];
                 sftr_Int32 color = sftr_Color_From_Pixel(pixel);

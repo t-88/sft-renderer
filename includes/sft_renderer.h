@@ -101,6 +101,7 @@ typedef struct sftr_Canvas {
 
 
 // meth: header
+// matrix ops
 void sftr_matrix_print(sftr_Matrix m);
 void sftr_matrix_ident(sftr_Matrix m);
 void sftr_matrix_zero(sftr_Matrix m);
@@ -127,6 +128,18 @@ void sftr_matrix_translate(sftr_Vector4 v,sftr_Matrix m);
 void sftr_matrix_rotate_z(sftr_Matrix m,double angle);
 void sftr_matrix_rotate_x(sftr_Matrix m,double angle);
 void sftr_matrix_rotate_y(sftr_Matrix m,double angle);
+
+// vector ops
+double sftr_vector_dot(sftr_Vector4 in1,sftr_Vector4 in2);
+double sftr_vector_length(sftr_Vector4 in);
+double sftr_vector_length_sqred(sftr_Vector4 in);
+
+sftr_Vector4 sftr_vector_normalize(sftr_Vector4 in);
+sftr_Vector4 sftr_vector_sub(sftr_Vector4 in1,sftr_Vector4 in2);
+sftr_Vector4 sftr_vector_addn(sftr_Vector4 in1,double n);
+sftr_Vector4 sftr_vector_subn(sftr_Vector4 in1,double n);
+sftr_Vector4 sftr_vector_multn(sftr_Vector4 in1,double n);
+sftr_Vector4 sftr_vector_divn(sftr_Vector4 in1,double n);
  
 
 //graphics header
@@ -468,6 +481,43 @@ void sftr_barycentric_inter(sftr_Vector4 a,sftr_Vector4 b,sftr_Vector4 c,sftr_Ve
     *w3 = (double) (((a.y - b.y) * (p.x - a.x)) + ((b.x - a.x) *  (p.y - a.y)))  * det;
 
     *w1 =   (double) 1 - *w2 - *w3;
+}
+
+
+
+// vectors ops
+
+// vector ops
+double sftr_vector_dot(sftr_Vector4 in1,sftr_Vector4 in2) {
+    return in1.x * in2.x + in1.y * in2.y + in1.z * in2.z; 
+}
+double sftr_vector_length(sftr_Vector4 in) {
+    return sqrt(in.x * in.x + in.y * in.y + in.z * in.z); 
+}
+double sftr_vector_length_sqred(sftr_Vector4 in) {
+    return in.x * in.x + in.y * in.y + in.z * in.z; 
+}
+
+
+sftr_Vector4 sftr_vector_normalize(sftr_Vector4 in) {
+    float len = sftr_vector_length(in);
+    return (sftr_Vector4) {in.x / len,in.y / len,in.z / len};
+}
+
+sftr_Vector4 sftr_vector_sub(sftr_Vector4 in1,sftr_Vector4 in2) {
+    return (sftr_Vector4) {in1.x - in2.x,in1.y - in2.y,in1.z - in2.z};
+}
+sftr_Vector4 sftr_vector_addn(sftr_Vector4 in1,double n) {
+    return (sftr_Vector4) {in1.x + n,in1.y + n,in1.z + n};
+}
+sftr_Vector4 sftr_vector_subn(sftr_Vector4 in1,double n) {
+    return (sftr_Vector4) {in1.x - n,in1.y - n,in1.z - n };
+}
+sftr_Vector4 sftr_vector_multn(sftr_Vector4 in1,double n) {
+    return (sftr_Vector4) {in1.x * n,in1.y * n,in1.z * n};
+}
+sftr_Vector4 sftr_vector_divn(sftr_Vector4 in1,double n) {
+    return (sftr_Vector4) {in1.x / n,in1.y / n,in1.z / n };
 }
 
 
@@ -842,6 +892,7 @@ void canvas_draw_traingle_textured(sftr_Canvas canvas,sftr_TexVertex a,sftr_TexV
     }
 
 }
+
 
 
 #endif

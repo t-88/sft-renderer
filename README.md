@@ -10,14 +10,16 @@ basic software renderer, smthing like olivec from tsoding.
 
 ## Dev Imgs
 **Appling matrix lib**    
-![matrix meth resualt](./dev-imgs/matrix_meth.gif)    
+![matrix meth resualt](./dev-imgs/matrix_meth.gif)     
 **Barycentric cords in action**     
-![bary traingle](./dev-imgs/bary_traingle.gif)
-**Texture Mapping**     
+![bary traingle](./dev-imgs/bary_traingle.gif)      
+**Texture Mapping**       
 ![texture mapping](./dev-imgs/texture_mapping.gif)
 
 **[Raytacer in one weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)**
 ![lambertian](./dev-imgs/raycaster_saved/raytracer_lambertian.png)
 ![metal](./dev-imgs/raycaster_saved/raytracer_reflection.png)
 ![metal-material-fuzz-effect](dev-imgs/raycaster_saved/raytracer-fuzz-effect.png)
+![metal-material-fuzz-effect](dev-imgs/raycaster_saved/raytracer-fuzz-effect.png)
+![raytracer-loading](dev-imgs/raytracer_loading.gif)
  

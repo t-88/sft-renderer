@@ -10,7 +10,14 @@ typedef struct RayLibBackend {
     void (*render)();
     float dt;
     float t;
+
+    Image raylib_img;
+    Texture2D raylib_texture;
+    Color* raylib_pixels;
 } RayLibBackend;
+
+void raylib_backend_apply_to_texture(RayLibBackend* backend);
+
 
 void raylib_backend_run(RayLibBackend* backend) {
     if(backend->canvas == NULL) {
@@ -31,47 +38,49 @@ void raylib_backend_run(RayLibBackend* backend) {
 
 
 
-    Image image = (Image) {
+    backend->raylib_img = (Image) {
             .width =  w,
             .height = h,
             .mipmaps = 1, 
             .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8
         };
-    Texture2D texture;
-    Color *pixels = (Color *)calloc(w*h, sizeof(Color));
+    backend->raylib_pixels = (Color *)calloc(w*h, sizeof(Color));
 
     backend->t = 0;
 
 
     while (!WindowShouldClose()) {
-
         backend->dt =  GetFrameTime();
         backend->t +=   backend->dt;
         backend->render();
 
-        for (int y = 0; y < h ; y++) {
-            for (int x = 0; x < w; x++) {
-                pixels[x + y * w] = (Color) {
-                                                    .r = backend->canvas->pixels[x + (h - y) * w].color.r,
-                                                    .g = backend->canvas->pixels[x + (h - y) * w].color.g,
-                                                    .b = backend->canvas->pixels[x + (h - y) * w].color.b,
-                                                    .a = backend->canvas->pixels[x + (h - y) * w].color.a
-                                                };
-            }            
-        }
-        image.data = pixels;
-        texture = LoadTextureFromImage(image);
-        BeginDrawing();
-            DrawTextureRec(texture, (Rectangle) { 0, 0, (float)w, (float)-h }, (Vector2) { 0, 0 }, WHITE);
-        EndDrawing();
-
-        // memory leak??
-        UnloadTexture(texture);
+        raylib_backend_apply_to_texture(backend);
+        
     }
     
+    free(backend->raylib_pixels);
+}
 
-
-    free(pixels);
+void raylib_backend_apply_to_texture(RayLibBackend* backend) {
+    int w = backend->canvas->w;
+    int h = backend->canvas->h;
+    for (int y = 0; y < h ; y++) {
+        for (int x = 0; x < w; x++) {
+            backend->raylib_pixels[x + y * w] = (Color) {
+                                                .r = backend->canvas->pixels[x + (h - y) * w].color.r,
+                                                .g = backend->canvas->pixels[x + (h - y) * w].color.g,
+                                                .b = backend->canvas->pixels[x + (h - y) * w].color.b,
+                                                .a = backend->canvas->pixels[x + (h - y) * w].color.a
+                                            };
+        }            
+    }
+    backend->raylib_img.data = backend->raylib_pixels;
+    backend->raylib_texture = LoadTextureFromImage(backend->raylib_img);
+    BeginDrawing();
+        DrawTextureRec(backend->raylib_texture, (Rectangle) { 0, 0, (float)w, (float)-h }, (Vector2) { 0, 0 }, WHITE);
+    EndDrawing();
+    // memory leak??
+    UnloadTexture(backend->raylib_texture);
 }
 
 

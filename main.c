@@ -227,7 +227,7 @@ void render();
 int main(void) {
     srand(time(NULL));
 
-    width = 1000;
+    width = 500;
     height = width / aspect_ratio; 
     canvas = canvas_new(width ,height);
 
@@ -249,7 +249,7 @@ int main(void) {
                                     };
 
 
-    sftr_Ray_Shpere shpere1 = sftr_ray_create_shpere((sftr_Vector4){0,0,-1},0.4,      (Material_t){.type=Metal     ,.attenuation = {0.5,0.5,0.5},.fuzz = 0.1f});
+    sftr_Ray_Shpere shpere1 = sftr_ray_create_shpere((sftr_Vector4){0,0,-1},0.4,      (Material_t){.type=Metal     ,.attenuation = {1.f,1.f,1.f},.fuzz = 0.f});
     sftr_Ray_Shpere shpere2 = sftr_ray_create_shpere((sftr_Vector4){0,-100.5f,-1},100,(Material_t){.type=Lambertian     ,.attenuation = {0.5,0.5,0.5}});
     sftr_Ray_Shpere shpere3 = sftr_ray_create_shpere((sftr_Vector4){1,0,-1},0.5,      (Material_t){.type=Lambertian     ,.attenuation = {0.5,0.5,0.5}});
     add_hitable(&shpere1);
@@ -354,8 +354,8 @@ void render()  {
             
             canvas_draw_pixel(canvas,x,y,sftr_ColorToHex(color));
         }
+        raylib_backend_apply_to_texture(&raylib_backend);
     }
-    printf("\n");
 
 
     

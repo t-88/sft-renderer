@@ -16,4 +16,8 @@ basic software renderer, smthing like olivec from tsoding.
 **Texture Mapping**     
 ![texture mapping](./dev-imgs/texture_mapping.gif)
 
+**[Raytacer in one weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)**
+![lambertian](./dev-imgs/raycaster_saved/raytracer_lambertian.png)
+![metal](./dev-imgs/raycaster_saved/raytracer_reflection.png)
+![metal-material-fuzz-effect](dev-imgs/raycaster_saved/raytracer-fuzz-effect.png)
  

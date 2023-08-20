@@ -136,6 +136,7 @@ double sftr_vector_length_sqred(sftr_Vector4 in);
 
 sftr_Vector4 sftr_vector_normalize(sftr_Vector4 in);
 sftr_Vector4 sftr_vector_sub(sftr_Vector4 in1,sftr_Vector4 in2);
+sftr_Vector4 sftr_vector_add(sftr_Vector4 in1,sftr_Vector4 in2);
 sftr_Vector4 sftr_vector_addn(sftr_Vector4 in1,double n);
 sftr_Vector4 sftr_vector_subn(sftr_Vector4 in1,double n);
 sftr_Vector4 sftr_vector_multn(sftr_Vector4 in1,double n);
@@ -503,7 +504,9 @@ sftr_Vector4 sftr_vector_normalize(sftr_Vector4 in) {
     float len = sftr_vector_length(in);
     return (sftr_Vector4) {in.x / len,in.y / len,in.z / len};
 }
-
+sftr_Vector4 sftr_vector_add(sftr_Vector4 in1,sftr_Vector4 in2) {
+    return (sftr_Vector4) {in1.x + in2.x,in1.y + in2.y,in1.z + in2.z};
+}
 sftr_Vector4 sftr_vector_sub(sftr_Vector4 in1,sftr_Vector4 in2) {
     return (sftr_Vector4) {in1.x - in2.x,in1.y - in2.y,in1.z - in2.z};
 }

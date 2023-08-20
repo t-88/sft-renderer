@@ -4,6 +4,8 @@ main:
 	cc $@.c -o $@ $(INCLUDES)
 	./$@
 	rm $@
+show: idx
+	feh dev-imgs/raycaster_saved/$>.ppm
 
 
 starfield3d:

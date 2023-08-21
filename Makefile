@@ -37,3 +37,8 @@ perspective_correction:
 	./examples/$@
 	rm examples/$@
 
+raytracer:
+	cc examples/$@.c -o examples/$@ $(INCLUDES)
+	./examples/$@
+	rm examples/$@
+

@@ -5,6 +5,9 @@
 #include <stdbool.h>
 
 
+
+
+
 #ifndef SFT_RENDERER_H
 #define SFT_RENDERER_H
 
@@ -34,9 +37,15 @@
 
 // auto generated functions
 #define  sftr_min(type) type sftr_min_##type(type a,type b) { if(a > b) { return b; } return a;}
-#define lerp(type)  double lerp_##type(type a, type b,type c) {return a + (b - a) * c;} 
-#define sftr_Color_From_Pixel(pixle) ((pixle).color.r << 16 | (pixle).color.g << 8 | (pixle).color.b << 0)
+#define sftr_lerp(type)  double lerp_##type(type a, type b,type c) {return a + (b - a) * c;} 
+#define sftr_clamp(type) type sftr_clamp_##type(type val,type min,type max) {if (val > max) {val = max;} else if(val < min) {val = min;} return val; }
 
+#define sftr_Color_From_Pixel(pixle) ((pixle).color.r << 16 | (pixle).color.g << 8 | (pixle).color.b << 0)
+#define sftr_ColorToHex(color) (color).r << 16 | (color).g << 8 | (color).b << 0
+
+
+// colors
+#define sftr_color_black (sftr_Color) {0,0,0,0xFF};
 
 
 
@@ -101,6 +110,9 @@ typedef struct sftr_Canvas {
 
 
 // meth: header
+float sftr_rand_float();
+
+
 // matrix ops
 void sftr_matrix_print(sftr_Matrix m);
 void sftr_matrix_ident(sftr_Matrix m);
@@ -142,6 +154,14 @@ sftr_Vector4 sftr_vector_subn(sftr_Vector4 in1,double n);
 sftr_Vector4 sftr_vector_multn(sftr_Vector4 in1,double n);
 sftr_Vector4 sftr_vector_divn(sftr_Vector4 in1,double n);
  
+sftr_Vector4 sftr_vector_random_unit();
+bool sftr_vector_is_zero(sftr_Vector4 vec);
+sftr_Vector4 sftr_vector_reflect(sftr_Vector4 normal,sftr_Vector4 vec);
+sftr_Vector4 sftr_vector_refract(sftr_Vector4 normal,sftr_Vector4 vec,double etai_over_etat);
+sftr_Vector4 sftr_vector_cross(sftr_Vector4 in1,sftr_Vector4 in2);
+
+sftr_Color sftr_color_interplate(sftr_Color start,sftr_Color end,float t);
+
 
 //graphics header
 int canvas_to_ppm(sftr_Canvas canvas,const char* file_name);
@@ -179,9 +199,14 @@ sftr_min(int);
 sftr_min(double);
 sftr_min(float);
 
-lerp(int);
-lerp(double);
-lerp(float);
+sftr_clamp(int);
+sftr_clamp(float);
+sftr_clamp(double);
+
+
+sftr_lerp(int);
+sftr_lerp(double);
+sftr_lerp(float);
 
 // matrix row ops
 void sftr_matrix_rowop_swap(sftr_Matrix in,int src,int dest) {
@@ -208,6 +233,12 @@ void sftr_matrix_rowop_mult_add(sftr_Matrix in,int src,double val ,int dest) {
 
 // meth implmetation
 // matrix helpers
+float sftr_rand_float() {
+    return (float) rand() / RAND_MAX;
+}
+
+
+
 void sftr_matrix_print(sftr_Matrix m) {
     for (size_t j = 0; j < 4; j++) {
         for (size_t i = 0; i < 4; i++)
@@ -500,6 +531,7 @@ double sftr_vector_length_sqred(sftr_Vector4 in) {
 }
 
 
+
 sftr_Vector4 sftr_vector_normalize(sftr_Vector4 in) {
     float len = sftr_vector_length(in);
     return (sftr_Vector4) {in.x / len,in.y / len,in.z / len};
@@ -521,6 +553,39 @@ sftr_Vector4 sftr_vector_multn(sftr_Vector4 in1,double n) {
 }
 sftr_Vector4 sftr_vector_divn(sftr_Vector4 in1,double n) {
     return (sftr_Vector4) {in1.x / n,in1.y / n,in1.z / n };
+}
+sftr_Vector4 sftr_vector_random_unit() {
+    sftr_Vector4 vec;
+    vec = (sftr_Vector4){.x = sftr_rand_float() * 2 - 1,.y = sftr_rand_float() * 2 - 1,.z = sftr_rand_float() * 2 - 1};
+    return sftr_vector_normalize(vec);
+}
+bool sftr_vector_is_zero(sftr_Vector4 vec) {
+    float near_zero = 1e-8;
+    return fabs(vec.x) <= near_zero && fabs(vec.y) <= near_zero && fabs(vec.z) <= near_zero;
+}
+sftr_Vector4 sftr_vector_reflect(sftr_Vector4 normal,sftr_Vector4 vec) {
+    return sftr_vector_sub(vec,sftr_vector_multn(normal,2 * sftr_vector_dot(vec,normal)));
+}
+sftr_Vector4 sftr_vector_refract(sftr_Vector4 normal,sftr_Vector4 vec,double etai_over_etat) {
+    float cos_theta = sftr_min_float(sftr_vector_dot(sftr_vector_multn(vec,-1),normal),1.f);
+    sftr_Vector4 r_out_prep = sftr_vector_multn(sftr_vector_add(vec,sftr_vector_multn(normal,cos_theta)),etai_over_etat);
+    sftr_Vector4 r_out_para  = sftr_vector_multn(normal,-sqrt(fabs(1.f - sftr_vector_length_sqred(vec))));
+    return sftr_vector_add(r_out_para,r_out_para);
+}
+sftr_Vector4 sftr_vector_cross(sftr_Vector4 in1,sftr_Vector4 in2) {
+    return (sftr_Vector4){
+                            in1.y * in2.z - in1.z * in2.y,
+                            in1.z * in2.x - in1.x * in2.z,
+                            in1.x * in2.y - in1.y * in2.x
+                        };    
+}
+
+sftr_Color sftr_color_interplate(sftr_Color start,sftr_Color end,float t) {
+    return (sftr_Color) {
+        start.r + (end.r - start.r) * t,
+        start.g + (end.g - start.g) * t,
+        start.b + (end.b - start.b) * t
+    };
 }
 
 
@@ -583,7 +648,8 @@ int canvas_to_ppm(sftr_Canvas canvas,const char* file_name) {
 
     FILE* f = fopen(file_name,"wb");
     if(f == NULL)  {
-        goto canvas_to_ppm_save_exit;
+        printf("[Error] canvas_to_ppm could not open file\n");
+        return -1;
     }
 
     fwrite("P3\n",1,3,f);

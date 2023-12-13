@@ -6,6 +6,7 @@
 #define SFTR_RENDERER_IMPL
 #include "sft_renderer.h"
 
+//TODO: wierd effects in the bottom of cavans after a while of running it
 
 typedef struct Star {
     double x , y;

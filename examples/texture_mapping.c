@@ -45,7 +45,7 @@ int main(void) {
 
 
 
-    img = stbi_load("star_wars_logo.png",&w,&h,&comp,3);
+    img = stbi_load("./examples/star_wars_logo.png",&w,&h,&comp,3);
     if(stbi_failure_reason()) {
         printf("%s\n",stbi_failure_reason());
         exit(1);
@@ -88,14 +88,13 @@ void render()  {
     
     sftr_Vertex ps[6];
 
-    sftr_matrix_rotate_x(rotate_x,sin(raylib_backend.t / 10) * 2 * sftr_PI);
-    sftr_matrix_rotate_z(rotate_z,cos(raylib_backend.t / 5) * 2 * sftr_PI);
+    sftr_matrix_rotate_x(rotate_x,sin(raylib_backend.t / 10) * 5 * sftr_PI);
+    sftr_matrix_rotate_z(rotate_z,cos(raylib_backend.t / 5) * 5 * sftr_PI);
     for (size_t i = 0; i < 6; i++) {
         ps[i].pos = sftr_matrix_mult_vector(rotate_x,points[i]);
         ps[i].pos = sftr_matrix_mult_vector(rotate_z,ps[i].pos);
         ps[i].pos = sftr_matrix_mult_vector(screen_space,ps[i].pos) ;
     }
-
 
     sftr_TexVertex p[6];
     p[0] = (sftr_TexVertex) {ps[0].pos,  (sftr_Vector4){.x =  0 , . y = 0}};

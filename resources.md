@@ -14,3 +14,4 @@
 
 # To Try Out
 -   [Double pendelum](https://www.youtube.com/watch?v=bUN-MxABRXQ&ab_channel=%C3%98ysteinBringsli)
+-   [Perline Noise](https://www.youtube.com/watch?v=Ou_gGXap1lA&ab_channel=Ed)

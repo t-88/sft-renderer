@@ -1,4 +1,4 @@
-INCLUDES = -Iincludes/ -lm -lraylib  -g
+INCLUDES = -Iincludes/ -Iincludes/raylib -lm libraylib.a  -g
 
 main:
 	cc $@.c -o $@ $(INCLUDES)
